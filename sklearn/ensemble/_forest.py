@@ -153,6 +153,8 @@ def _parallel_build_trees(
     bootstrap,
     X,
     y,
+    epsilon,
+    delta_q,
     sample_weight,
     tree_idx,
     n_trees,
@@ -189,6 +191,8 @@ def _parallel_build_trees(
         tree._fit(
             X,
             y,
+            epsilon=epsilon,
+            delta_q=delta_q,
             sample_weight=curr_sample_weight,
             check_input=False,
             missing_values_in_feature_mask=missing_values_in_feature_mask,
@@ -197,6 +201,8 @@ def _parallel_build_trees(
         tree._fit(
             X,
             y,
+            epsilon=epsilon,
+            delta_q=delta_q,
             sample_weight=sample_weight,
             check_input=False,
             missing_values_in_feature_mask=missing_values_in_feature_mask,
@@ -326,7 +332,7 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
         return sparse_hstack(indicators).tocsr(), n_nodes_ptr
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, sample_weight=None):
+    def fit(self, X, y, epsilon=0.0, delta_q=1.0, sample_weight=None):
         """
         Build a forest of trees from the training set (X, y).
 
@@ -340,6 +346,12 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
         y : array-like of shape (n_samples,) or (n_samples, n_outputs)
             The target values (class labels in classification, real numbers in
             regression).
+
+        epsilon : A float, if 0.0 nothing happens, for other values the differential privacy
+            application will be performed. The closer the value is to 0, the smaller the impact 
+            of information gain on the choice of thresholds will be.
+
+        delta_q : sensitivity.
 
         sample_weight : array-like of shape (n_samples,), default=None
             Sample weights. If None, then samples are equally weighted. Splits
@@ -494,6 +506,8 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
                     self.bootstrap,
                     X,
                     y,
+                    epsilon, 
+                    delta_q,
                     sample_weight,
                     i,
                     len(trees),
