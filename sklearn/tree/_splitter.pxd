@@ -3,11 +3,11 @@
 
 # See _splitter.pyx for details.
 
-from ..utils._typedefs cimport (
+from sklearn.utils._typedefs cimport (
     float32_t, float64_t, int8_t, int32_t, intp_t, uint8_t, uint32_t
 )
-from ._criterion cimport Criterion
-from ._tree cimport ParentInfo
+from sklearn.tree._criterion cimport Criterion
+from sklearn.tree._tree cimport ParentInfo
 
 
 cdef struct SplitRecord:
@@ -23,7 +23,7 @@ cdef struct SplitRecord:
     float64_t lower_bound     # Lower bound on value of both children for monotonicity
     float64_t upper_bound     # Upper bound on value of both children for monotonicity
     uint8_t missing_go_to_left  # Controls if missing values go to the left node.
-    intp_t n_missing            # Number of missing values for the feature being split on
+
 
 cdef class Splitter:
     # The splitter searches in the input space for a feature and a threshold
@@ -93,12 +93,11 @@ cdef class Splitter:
         float64_t* weighted_n_node_samples
     ) except -1 nogil
 
-    cdef int node_split(
+    cdef int node_split( # Modificado: Adiciona o local budget aos args.
         self,
         ParentInfo* parent,
         SplitRecord* split,
-        float32_t epsilon,
-        float32_t delta_q
+        float32_t epsilon_local_budget 
     ) except -1 nogil
 
     cdef void node_value(self, float64_t* dest) noexcept nogil
@@ -107,16 +106,19 @@ cdef class Splitter:
 
     cdef float64_t node_impurity(self) noexcept nogil
 
-# =============================================================================
-# DPNodeSplit for Differential Privacy data structure
-# =============================================================================
-
+# Modificado: Adiciona a estrutura que irá armazenar os dados necessários para o DP.
 cdef struct SplitRecordForDifferentialPrivacy:
-    intp_t feature                      # Which feature to split on.
-    intp_t pos                          # Split samples array at the given position,
-    float64_t threshold                 # Threshold to split at.
-    float64_t partial_improvement       # Loacal impurity improvement given parent node.
+    intp_t feature         # Which feature to split on.
+    intp_t pos             # Split samples array at the given position,
+    float64_t threshold       # Threshold to split at.
+
+    float64_t partial_improvement
     float64_t weight
     float64_t probability
-    uint8_t missing_go_to_left          # Controls if missing values go to the left node.
-    intp_t n_missing                    # Number of missing values for the feature being split on
+
+    float64_t improvement     # Impurity improvement given parent node.
+    float64_t impurity_left   # Impurity of the left split.
+    float64_t impurity_right  # Impurity of the right split.
+    float64_t lower_bound     # Lower bound on value of both children for monotonicity
+    float64_t upper_bound     # Upper bound on value of both children for monotonicity
+    uint8_t missing_go_to_left  # Controls if missing values go to the left node.
