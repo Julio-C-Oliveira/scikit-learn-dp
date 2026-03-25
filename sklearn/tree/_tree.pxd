@@ -6,10 +6,10 @@
 import numpy as np
 cimport numpy as cnp
 
-from ..utils._typedefs cimport float32_t, float64_t, intp_t, int32_t, uint8_t, uint32_t
+from sklearn.utils._typedefs cimport float32_t, float64_t, intp_t, int32_t, uint8_t, uint32_t
 
-from ._splitter cimport Splitter
-from ._splitter cimport SplitRecord
+from sklearn.tree._splitter cimport Splitter
+from sklearn.tree._splitter cimport SplitRecord
 
 cdef struct Node:
     # Base storage structure for the nodes in a Tree object
@@ -83,7 +83,7 @@ cdef class Tree:
 # Tree builder
 # =============================================================================
 
-cdef class TreeBuilder:
+cdef class TreeBuilder: # Modificado: Adiciona o global budget.
     # The TreeBuilder recursively builds a Tree object from training samples,
     # using a Splitter object for splitting internal nodes and assigning
     # values to leaves.
@@ -98,8 +98,7 @@ cdef class TreeBuilder:
     cdef float64_t min_weight_leaf         # Minimum weight in a leaf
     cdef intp_t max_depth               # Maximal tree depth
     cdef float64_t min_impurity_decrease   # Impurity threshold for early stopping
-    cdef float32_t epsilon
-    cdef float32_t delta_q
+    cdef float32_t epsilon_global_budget
 
     cpdef build(
         self,

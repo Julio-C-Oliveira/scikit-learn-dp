@@ -21,10 +21,12 @@ cimport numpy as cnp
 cnp.import_array()
 
 from scipy.sparse import issparse
-from scipy.sparse import csr_matrix
+from scipy.sparse import csr_array
 
-from ._utils cimport safe_realloc
-from ._utils cimport sizet_ptr_to_ndarray
+from sklearn.utils import _align_api_if_sparse
+
+from sklearn.tree._utils cimport safe_realloc
+from sklearn.tree._utils cimport sizet_ptr_to_ndarray
 
 cdef extern from "numpy/arrayobject.h":
     object PyArray_NewFromDescr(PyTypeObject* subtype, cnp.dtype descr,
@@ -125,21 +127,27 @@ cdef struct StackRecord:
     float64_t lower_bound
     float64_t upper_bound
 
-cdef class DepthFirstTreeBuilder(TreeBuilder):
+# Modificado: Adiciona função para cálcular o local budget:
+cdef inline float32_t calculate_local_budget(object epsilon_global, intp_t max_depth) noexcept:
+    if epsilon_global is None:
+        return -1.0
+    
+    return <float32_t>(epsilon_global / (max_depth + 1))
+
+cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global budget.
     """Build a decision tree in depth-first fashion."""
 
     def __cinit__(self, Splitter splitter, intp_t min_samples_split,
                   intp_t min_samples_leaf, float64_t min_weight_leaf,
                   intp_t max_depth, float64_t min_impurity_decrease,
-                  float32_t epsilon, float32_t delta_q):
+                  float32_t epsilon_global_budget):
         self.splitter = splitter
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
         self.min_weight_leaf = min_weight_leaf
         self.max_depth = max_depth
         self.min_impurity_decrease = min_impurity_decrease
-        self.epsilon = epsilon
-        self.delta_q = delta_q
+        self.epsilon_global_budget = epsilon_global_budget
 
     cpdef build(
         self,
@@ -172,9 +180,8 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
         cdef intp_t min_samples_split = self.min_samples_split
         cdef float64_t min_impurity_decrease = self.min_impurity_decrease
 
-        # Args needed to calculate differential privacy
-        cdef float32_t epsilon = self.epsilon
-        cdef float32_t delta_q = self.delta_q
+        # Modificado: Adiciona o global budget e calcula o local budget.
+        cdef float32_t epsilon_local_budget = calculate_local_budget(self.epsilon_global_budget, max_depth)
 
         # Recursive partition (without actual recursion)
         splitter.init(X, y, sample_weight, missing_values_in_feature_mask)
@@ -252,8 +259,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder):
                     splitter.node_split(
                         &parent_record,
                         &split,
-                        epsilon,
-                        delta_q
+                        epsilon_local_budget
                     )
                     # If EPSILON=0 in the below comparison, float precision
                     # issues stop splitting, producing trees that are
@@ -394,7 +400,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
                   intp_t min_samples_leaf,  min_weight_leaf,
                   intp_t max_depth, intp_t max_leaf_nodes,
                   float64_t min_impurity_decrease,
-                  float64_t epsilon, float64_t delta_q):
+                  float32_t epsilon_global_budget):
         self.splitter = splitter
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
@@ -402,8 +408,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
         self.max_depth = max_depth
         self.max_leaf_nodes = max_leaf_nodes
         self.min_impurity_decrease = min_impurity_decrease
-        self.epsilon = epsilon
-        self.delta_q = delta_q
+        self.epsilon_global_budget = epsilon_global_budget
 
     cpdef build(
         self,
@@ -593,10 +598,9 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
         cdef float64_t min_impurity_decrease = self.min_impurity_decrease
         cdef float64_t weighted_n_node_samples
         cdef bint is_leaf
-
-        # Args needed to calculate differential privacy
-        cdef float32_t epsilon = self.epsilon
-        cdef float32_t delta_q = self.delta_q
+        
+        # Modificado: Adiciona o global budget e calcula o local budget.
+        cdef float32_t epsilon_local_budget = -1.0
 
         splitter.node_reset(start, end, &weighted_n_node_samples)
 
@@ -618,8 +622,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
             splitter.node_split(
                 parent_record,
                 &split,
-                epsilon,
-                delta_q
+                epsilon_local_budget
             )
             # If EPSILON=0 in the below comparison, float precision issues stop
             # splitting early, producing trees that are dissimilar to v0.18
@@ -1020,7 +1023,7 @@ cdef class Tree:
         """
         # Check input
         if not (issparse(X) and X.format == 'csr'):
-            raise ValueError("X should be in csr_matrix format, got %s"
+            raise ValueError("X should be in CSR sparse format, got %s"
                              % type(X))
 
         if X.dtype != DTYPE:
@@ -1105,6 +1108,7 @@ cdef class Tree:
         # Extract input
         cdef const float32_t[:, :] X_ndarray = X
         cdef intp_t n_samples = X.shape[0]
+        cdef float32_t X_i_node_feature
 
         # Initialize output
         cdef intp_t[:] indptr = np.zeros(n_samples + 1, dtype=np.intp)
@@ -1127,7 +1131,13 @@ cdef class Tree:
                     indices[indptr[i + 1]] = <intp_t>(node - self.nodes)
                     indptr[i + 1] += 1
 
-                    if X_ndarray[i, node.feature] <= node.threshold:
+                    X_i_node_feature = X_ndarray[i, node.feature]
+                    if isnan(X_i_node_feature):
+                        if node.missing_go_to_left:
+                            node = &self.nodes[node.left_child]
+                        else:
+                            node = &self.nodes[node.right_child]
+                    elif X_i_node_feature <= node.threshold:
                         node = &self.nodes[node.left_child]
                     else:
                         node = &self.nodes[node.right_child]
@@ -1138,17 +1148,17 @@ cdef class Tree:
 
         indices = indices[:indptr[n_samples]]
         cdef intp_t[:] data = np.ones(shape=len(indices), dtype=np.intp)
-        out = csr_matrix((data, indices, indptr),
-                         shape=(n_samples, self.node_count))
+        out = csr_array((data, indices, indptr),
+                        shape=(n_samples, self.node_count))
 
-        return out
+        return _align_api_if_sparse(out)
 
     cdef inline object _decision_path_sparse_csr(self, object X):
         """Finds the decision path (=node) for each sample in X."""
 
         # Check input
         if not (issparse(X) and X.format == "csr"):
-            raise ValueError("X should be in csr_matrix format, got %s"
+            raise ValueError("X should be in CSR sparse format, got %s"
                              % type(X))
 
         if X.dtype != DTYPE:
@@ -1222,10 +1232,10 @@ cdef class Tree:
 
         indices = indices[:indptr[n_samples]]
         cdef intp_t[:] data = np.ones(shape=len(indices), dtype=np.intp)
-        out = csr_matrix((data, indices, indptr),
-                         shape=(n_samples, self.node_count))
+        out = csr_array((data, indices, indptr),
+                        shape=(n_samples, self.node_count))
 
-        return out
+        return _align_api_if_sparse(out)
 
     cpdef compute_node_depths(self):
         """Compute the depth of each node in a tree.
