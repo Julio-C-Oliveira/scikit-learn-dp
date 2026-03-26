@@ -21,7 +21,8 @@ Utilize os seguintes parâmtros para garantir que a aplicação de DP está ocor
 - max_depth != None
 - splitter = "best"
 
-TO-DO
+TO-DO:
+
 - [ ] Inicialização das váriaveis necessárias:
    - [x] Receber o orçamento total por hiperparâmetro, e definir o orçamento por camada. ε por camada = ε total / (profundidade máxima + 1).
    - [ ] Adicionar a possibilidade de passar um valor None no Epsilon, convertendo para -1.0 no meio do caminho, não vou usar NULL, pois somente ponteiros aceitam NULL.
@@ -39,8 +40,16 @@ TO-DO
 - [ ] Implementar o mecanismo de Laplace nos nós folha.
 
 Atual:
+
 - Já implementei o orçamento, já chegou no node_split_best.
-- Agora tenho que repassar a função de sensibilidade para a node split best.
+- Agora tenho que repassar a função de sensibilidade para a node split best. Primeira vai ser a de Gini Impurity. 
+- Testar a função de sensibilidade:
+- [ ] Testar a Gini.
+- [ ] Testar a MSE.
+
+Baixar depois:
+
+- Stand by Me
 
 ============
 
