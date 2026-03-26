@@ -14,6 +14,9 @@ tree_extension_metadata = {
   '_utils':
     {'sources': [cython_gen.process('_utils.pyx')],
      'override_options': ['optimization=3']},
+  '_sensitivity':
+    {'sources': [cython_gen.process('_sensitivity.pyx')],
+     'override_options': ['optimization=3']},
 }
 
 foreach ext_name, ext_dict : tree_extension_metadata
