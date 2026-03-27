@@ -90,7 +90,9 @@ cdef float64_t get_max_improvement_array(SplitRecordArray* arr) noexcept nogil
 cdef float64_t get_min_improvement_array(SplitRecordArray* arr) noexcept nogil
 cdef void downward_scaling_array(SplitRecordArray* arr, float64_t max_improvement) noexcept nogil
 
-cdef void calculate_weights_and_probabilities(SplitRecordArray* arr, float64_t epsilon, float64_t delta_q) noexcept nogil
-
-cdef float64_t random_float() noexcept nogil
-cdef SplitRecordForDifferentialPrivacy* choose_weighted_random(SplitRecordArray* arr) noexcept nogil
+cdef SplitRecordForDifferentialPrivacy* choose_dp_split(
+    SplitRecordArray* arr, 
+    float64_t epsilon, 
+    float64_t delta_u,
+    uint32_t* random_state
+) noexcept nogil

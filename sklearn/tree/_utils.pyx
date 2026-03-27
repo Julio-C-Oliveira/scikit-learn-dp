@@ -300,11 +300,12 @@ cdef void append_to_array(SplitRecordArray* arr, SplitRecordForDifferentialPriva
     if arr.size == arr.capacity:
         new_capacity = 16 if arr.capacity == 0 else arr.capacity * 2 # Antes aumentava de 100 em 100, mas resolvi dobrar logo, vou alocar mais memória, mas vou realocar menas vezes.
         arr.data = <SplitRecordForDifferentialPrivacy*>realloc(arr.data, new_capacity * sizeof(SplitRecordForDifferentialPrivacy))
-        arr.capacity = new_capacity
         
         if arr.data == NULL:
             return
-            
+
+        arr.capacity = new_capacity
+
     arr.data[arr.size] = value[0]
     arr.size += 1
 

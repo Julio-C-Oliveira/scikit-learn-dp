@@ -30,7 +30,7 @@ from sklearn.tree._partitioner cimport (
 from sklearn.tree._utils cimport RAND_R_MAX, rand_int, rand_uniform
 
 # Modificado: Importa as funções utilizadas para aplicar o DP.
-from sklearn.tree._utils cimport SplitRecordArray, init_array, free_array, append_to_array, get_max_improvement_array, downward_scaling_array, calculate_weights_and_probabilities, choose_weighted_random
+from sklearn.tree._utils cimport SplitRecordArray, init_array, free_array, append_to_array, get_max_improvement_array, downward_scaling_array, choose_dp_split
 
 # Modificado: Adiciona bibliotecas para debugar o código.
 from libc.stdio cimport fprintf, stderr
