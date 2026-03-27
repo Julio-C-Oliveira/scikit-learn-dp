@@ -28,6 +28,9 @@ from sklearn.utils import _align_api_if_sparse
 from sklearn.tree._utils cimport safe_realloc
 from sklearn.tree._utils cimport sizet_ptr_to_ndarray
 
+# Modificado: Adiciona bibliotecas para debugar o código.
+from libc.stdio cimport fprintf, stderr
+
 cdef extern from "numpy/arrayobject.h":
     object PyArray_NewFromDescr(PyTypeObject* subtype, cnp.dtype descr,
                                 int nd, cnp.npy_intp* dims,
@@ -129,7 +132,9 @@ cdef struct StackRecord:
 
 # Modificado: Adiciona função para cálcular o local budget:
 cdef inline float32_t calculate_local_budget(object epsilon_global, intp_t max_depth) noexcept:
-    if epsilon_global is None:
+    fprintf(stderr, "[_tree]: Epsilon Global = %f \n", <float32_t>epsilon_global)
+
+    if <float32_t>epsilon_global == -1.0:
         return -1.0
     
     return <float32_t>(epsilon_global / (max_depth + 1))

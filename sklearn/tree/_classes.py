@@ -1016,7 +1016,7 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
         )
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, epsilon_global_budget=None, sample_weight=None, check_input=True):
+    def fit(self, X, y, epsilon_global_budget=-1.0, sample_weight=None, check_input=True):
         """Build a decision tree classifier from the training set (X, y).
 
         Parameters
@@ -1406,7 +1406,7 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
         )
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, epsilon_global_budget=None, sample_weight=None, check_input=True):
+    def fit(self, X, y, epsilon_global_budget=-1.0, sample_weight=None, check_input=True):
         """Build a decision tree regressor from the training set (X, y).
 
         Parameters
