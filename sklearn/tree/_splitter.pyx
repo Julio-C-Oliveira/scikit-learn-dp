@@ -337,9 +337,11 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
     cdef SplitRecordArray dp_array
     init_array(&dp_array)
 
+    cdef  float32_t delta_u = sensitivity.compute(criterion.n_node_samples)
+
     # Modificado: Debug
     fprintf(stderr, "[Node Split Best]: Epsilon Local = %f \n", epsilon_local_budget)
-    fprintf(stderr, "[Node Split Best]: Sensibilidade = %f \n", sensitivity.compute(criterion.n_node_samples))
+    fprintf(stderr, "[Node Split Best]: Sensibilidade = %f \n", delta_u)
 
     _init_split(&best_split, end)
 
@@ -466,6 +468,7 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
                     continue
 
                 current_proxy_improvement = criterion.proxy_impurity_improvement()
+                current_split_with_parcial_improvement.partial_improvement = current_proxy_improvement # Modificado.
 
                 if current_proxy_improvement > best_proxy_improvement:
                     best_proxy_improvement = current_proxy_improvement
@@ -494,6 +497,46 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
                         current_split.missing_go_to_left = missing_go_to_left
 
                     best_split = current_split  # copy
+
+                # Modificado: Replicando os dados básicos ===============================
+                if epsilon_local_budget >= 0:
+                    current_split_with_parcial_improvement.feature = current_split.feature
+                    current_split_with_parcial_improvement.pos = current_split.pos
+                    current_split_with_parcial_improvement.threshold = current_split.threshold
+
+                    current_split_with_parcial_improvement.improvement = current_split.improvement
+                    current_split_with_parcial_improvement.impurity_left = current_split.impurity_left
+                    current_split_with_parcial_improvement.impurity_right = current_split.impurity_right
+                    current_split_with_parcial_improvement.lower_bound = current_split.lower_bound
+                    current_split_with_parcial_improvement.upper_bound = current_split.upper_bound
+                    current_split_with_parcial_improvement.missing_go_to_left = current_split.missing_go_to_left
+
+                    append_to_array(&dp_array, &current_split_with_parcial_improvement)
+                # ==============================================================================
+
+    # Lógica da implementação de Differential Privacy ========================
+    cdef float64_t max_partial_improvement = 0.0
+    cdef SplitRecordForDifferentialPrivacy* choosen_dp_threshold = NULL
+    if epsilon_local_budget >= 0:
+
+        max_partial_improvement = get_max_improvement_array(&dp_array)
+        downward_scaling_array(&dp_array, max_partial_improvement)
+
+        calculate_weights_and_probabilities(&dp_array, epsilon_local_budget, delta_u)
+        choosen_dp_threshold = choose_weighted_random(&dp_array)
+
+        best_split.feature = choosen_dp_threshold.feature
+        best_split.pos = choosen_dp_threshold.pos
+        best_split.threshold = choosen_dp_threshold.threshold
+
+        best_split.improvement = choosen_dp_threshold.improvement
+        best_split.impurity_left = choosen_dp_threshold.impurity_left
+        best_split.impurity_right = choosen_dp_threshold.impurity_right
+        best_split.lower_bound = choosen_dp_threshold.lower_bound
+        best_split.upper_bound = choosen_dp_threshold.upper_bound
+        best_split.missing_go_to_left = choosen_dp_threshold.missing_go_to_left
+
+        free_array(&dp_array)
 
     # Reorganize into samples[start:best_split.pos] + samples[best_split.pos:end]
     if best_split.pos < end:

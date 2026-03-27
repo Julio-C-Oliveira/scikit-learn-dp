@@ -47,7 +47,12 @@ Atual:
 - Testar a função de sensibilidade:
 - [x] Testar a Gini.
 - [x] Testar a MSE.
-- 
+- [x] Adicionar a aplicação do mecanismo exponencial aos nós de split.
+- [ ] Verificar um modo de otimizar a aplicação do mecanismo exponencial.
+- Implementar as funções de sensibilidade para os nós folha:
+- [ ] Para contagem de classes.
+- [ ] Para soma do valor das amostras.
+- [ ] Adicionar o mecanismo de Laplace aos nós folha.
 
 Baixar depois:
 
