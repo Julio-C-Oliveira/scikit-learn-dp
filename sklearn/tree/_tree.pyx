@@ -255,6 +255,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
                 # impurity == 0 with tolerance due to rounding errors
                 is_leaf = is_leaf or parent_record.impurity <= EPSILON
 
+                # Modificado: Adiciona o epsilon_local_budget.
                 if not is_leaf:
                     splitter.node_split(
                         &parent_record,
@@ -618,6 +619,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
                    parent_record.impurity <= EPSILON  # impurity == 0 with tolerance
                    )
 
+        # Modificado: Adiciona o epsilon_local_budget.
         if not is_leaf:
             splitter.node_split(
                 parent_record,

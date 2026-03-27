@@ -20,6 +20,7 @@ Utilize os seguintes parâmtros para garantir que a aplicação de DP está ocor
 - max_leaf_nodes = None
 - max_depth != None
 - splitter = "best"
+- criterion = "squared_error" para regressão ou "gini"
 
 TO-DO:
 
@@ -29,9 +30,9 @@ TO-DO:
    - [ ] Adicionar uma váriavel para debug.
    - [ ] Definir o Global max e Global min, para o target em caso de árvores de regressão.
 - [ ] Definir a função de sensibilidade de acordo com a função de utilidade:
-   - [ ] Para o mean squared error. Δu = (Gmax - Gmin)²/n
+   - [x] Para o mean squared error. Δu = (Gmax - Gmin)²/n
    - [ ] Para o squared error. Δu = (Gmax - Gmin)²
-   - [ ] Para o gini impurity. Δu = 1/n, onde n é o número de amostras no nó.
+   - [x] Para o gini impurity. Δu = 1/n, onde n é o número de amostras no nó.
    - [ ] Para o entropia. Δu = 1/n, onde n é o número de amostras no nó.
 - [ ] Implementar o mecanismo exponencial nos nós de split.
 - [ ] Definir a função de sensibilidade para os nós folha:
@@ -44,8 +45,9 @@ Atual:
 - Já implementei o orçamento, já chegou no node_split_best.
 - Agora tenho que repassar a função de sensibilidade para a node split best. Primeira vai ser a de Gini Impurity. 
 - Testar a função de sensibilidade:
-- [ ] Testar a Gini.
-- [ ] Testar a MSE.
+- [x] Testar a Gini.
+- [x] Testar a MSE.
+- 
 
 Baixar depois:
 

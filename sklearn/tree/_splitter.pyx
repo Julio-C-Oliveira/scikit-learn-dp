@@ -74,6 +74,7 @@ cdef class Splitter:
         float64_t min_weight_leaf,
         object random_state,
         const int8_t[:] monotonic_cst,
+        Sensitivity sensitivity # Modificado.
     ):
         """
         Parameters
@@ -114,6 +115,8 @@ cdef class Splitter:
         self.monotonic_cst = monotonic_cst
         self.with_monotonic_cst = monotonic_cst is not None
 
+        self.sensitivity = sensitivity # Modificado.
+
     def __getstate__(self):
         return {}
 
@@ -126,7 +129,8 @@ cdef class Splitter:
                              self.min_samples_leaf,
                              self.min_weight_leaf,
                              self.random_state,
-                             self.monotonic_cst), self.__getstate__())
+                             self.monotonic_cst,
+                             self.sensitivity), self.__getstate__())
 
     cdef int init(
         self,
@@ -275,7 +279,8 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
     Criterion criterion,
     SplitRecord* split,
     ParentInfo* parent_record,
-    float32_t epsilon_local_budget
+    float32_t epsilon_local_budget,
+    Sensitivity sensitivity
 ) except -1 nogil:
     """Find the best split on node samples[start:end]
 
@@ -327,13 +332,14 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
     # n_total_constants = n_known_constants + n_found_constants
     cdef intp_t n_total_constants = n_known_constants
 
-    # Variavéis necessárias para a aplicação de DP.
+    # Modificado: Variavéis necessárias para a aplicação de DP.
     cdef SplitRecordForDifferentialPrivacy current_split_with_parcial_improvement
     cdef SplitRecordArray dp_array
     init_array(&dp_array)
 
-    # Debug
+    # Modificado: Debug
     fprintf(stderr, "[Node Split Best]: Epsilon Local = %f \n", epsilon_local_budget)
+    fprintf(stderr, "[Node Split Best]: Sensibilidade = %f \n", sensitivity.compute(criterion.n_node_samples))
 
     _init_split(&best_split, end)
 
@@ -529,8 +535,8 @@ cdef inline int node_split_random(
     Criterion criterion,
     SplitRecord* split,
     ParentInfo* parent_record,
-    float32_t epsilon_local_budget
-
+    float32_t epsilon_local_budget,
+    Sensitivity sensitivity
 ) except -1 nogil:
     """Find the best random split on node samples[start:end]
 
@@ -777,7 +783,6 @@ cdef class BestSplitter(Splitter):
             ParentInfo* parent_record,
             SplitRecord* split,
             float32_t epsilon_local_budget
-
     ) except -1 nogil:
         return node_split_best(
             self,
@@ -785,7 +790,8 @@ cdef class BestSplitter(Splitter):
             self.criterion,
             split,
             parent_record,
-            epsilon_local_budget
+            epsilon_local_budget,
+            self.sensitivity
         )
 
 cdef class BestSparseSplitter(Splitter):
@@ -808,7 +814,6 @@ cdef class BestSparseSplitter(Splitter):
             ParentInfo* parent_record,
             SplitRecord* split,
             float32_t epsilon_local_budget
-
     ) except -1 nogil:
         return node_split_best(
             self,
@@ -816,7 +821,8 @@ cdef class BestSparseSplitter(Splitter):
             self.criterion,
             split,
             parent_record,
-            epsilon_local_budget
+            epsilon_local_budget,
+            self.sensitivity
         )
 
 cdef class RandomSplitter(Splitter):
@@ -839,7 +845,6 @@ cdef class RandomSplitter(Splitter):
             ParentInfo* parent_record,
             SplitRecord* split,
             float32_t epsilon_local_budget
-            
     ) except -1 nogil:
         return node_split_random(
             self,
@@ -847,7 +852,8 @@ cdef class RandomSplitter(Splitter):
             self.criterion,
             split,
             parent_record,
-            epsilon_local_budget
+            epsilon_local_budget,
+            self.sensitivity
         )
 
 cdef class RandomSparseSplitter(Splitter):
@@ -869,7 +875,6 @@ cdef class RandomSparseSplitter(Splitter):
             ParentInfo* parent_record,
             SplitRecord* split,
             float32_t epsilon_local_budget
-
     ) except -1 nogil:
         return node_split_random(
             self,
@@ -877,5 +882,6 @@ cdef class RandomSparseSplitter(Splitter):
             self.criterion,
             split,
             parent_record,
-            epsilon_local_budget
+            epsilon_local_budget,
+            self.sensitivity
         )
