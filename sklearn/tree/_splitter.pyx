@@ -522,8 +522,17 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
         max_partial_improvement = get_max_improvement_array(&dp_array)
         downward_scaling_array(&dp_array, max_partial_improvement)
 
-        calculate_weights_and_probabilities(&dp_array, epsilon_local_budget, delta_u)
-        choosen_dp_threshold = choose_weighted_random(&dp_array)
+        choosen_dp_threshold = choose_dp_split(
+            &dp_array, 
+            epsilon_local_budget, 
+            delta_u, 
+            random_state
+        )
+
+        if choosen_dp_threshold == NULL:
+            free_array(&dp_array)
+            return -1
+
 
         best_split.feature = choosen_dp_threshold.feature
         best_split.pos = choosen_dp_threshold.pos

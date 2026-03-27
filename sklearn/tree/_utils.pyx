@@ -15,8 +15,8 @@ from sklearn.utils._random cimport our_rand_r
 
 # Modificado: Preciso pro mecanismo exponencial de DP.
 from libc.math cimport exp 
-from libc.stdlib cimport rand, RAND_MAX
 from libc.math cimport ceil
+from sklearn.tree._utils cimport rand_uniform
 
 from libc.math cimport INFINITY
 
@@ -298,10 +298,14 @@ cdef void free_array(SplitRecordArray* arr) noexcept nogil:
 cdef void append_to_array(SplitRecordArray* arr, SplitRecordForDifferentialPrivacy* value) noexcept nogil:
     cdef size_t new_capacity
     if arr.size == arr.capacity:
-        new_capacity = 5 if arr.capacity == 0 else arr.capacity + 100
+        new_capacity = 16 if arr.capacity == 0 else arr.capacity * 2 # Antes aumentava de 100 em 100, mas resolvi dobrar logo, vou alocar mais memória, mas vou realocar menas vezes.
         arr.data = <SplitRecordForDifferentialPrivacy*>realloc(arr.data, new_capacity * sizeof(SplitRecordForDifferentialPrivacy))
         arr.capacity = new_capacity
-    arr.data[arr.size] = value[0]  # copia struct
+        
+        if arr.data == NULL:
+            return
+            
+    arr.data[arr.size] = value[0]
     arr.size += 1
 
 cdef float64_t get_max_improvement_array(SplitRecordArray* arr) noexcept nogil:
@@ -325,24 +329,29 @@ cdef void downward_scaling_array(SplitRecordArray* arr, float64_t max_improvemen
     for i in range(arr.size):
         arr.data[i].partial_improvement -= max_improvement
 
-cdef void calculate_weights_and_probabilities(SplitRecordArray* arr, float64_t epsilon, float64_t delta_q) noexcept nogil:
+cdef SplitRecordForDifferentialPrivacy* choose_dp_split(
+    SplitRecordArray* arr, 
+    float64_t epsilon, 
+    float64_t delta_u,
+    uint32_t* random_state
+) noexcept nogil:
+    
     cdef size_t i
     cdef float64_t sum_weights = 0.0
+
     for i in range(arr.size):
-        arr.data[i].weight = exp((epsilon * arr.data[i].partial_improvement) / (2 * delta_q))
+        arr.data[i].weight = exp((epsilon * arr.data[i].partial_improvement) / (2.0 * delta_u))
         sum_weights += arr.data[i].weight
-    for i in range(arr.size):
-        arr.data[i].probability = arr.data[i].weight / sum_weights
 
-cdef float64_t random_float() noexcept nogil:
-    return rand() / RAND_MAX
+    if sum_weights <= 0.0:
+        return &arr.data[0]
 
-cdef SplitRecordForDifferentialPrivacy* choose_weighted_random(SplitRecordArray* arr) noexcept nogil:
-    cdef float64_t r = random_float()
+    cdef float64_t r = rand_uniform(0.0, sum_weights, random_state)
     cdef float64_t cumulative = 0.0
-    cdef size_t i
+
     for i in range(arr.size):
-        cumulative += arr.data[i].probability
-        if r < cumulative:
+        cumulative += arr.data[i].weight
+        if r <= cumulative:
             return &arr.data[i]
-    return NULL
+            
+    return &arr.data[arr.size - 1]
