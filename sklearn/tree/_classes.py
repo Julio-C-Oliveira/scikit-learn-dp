@@ -248,6 +248,8 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         X,
         y,
         epsilon_global_budget,
+        global_max_target,
+        global_min_target,
         sample_weight=None,
         check_input=True,
         missing_values_in_feature_mask=None,
@@ -400,7 +402,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 sensibility = SENSITIVITY_FUNCTION[self.sensibility]()
             else:
                 criterion = CRITERIA_REG[self.criterion](self.n_outputs_, n_samples)
-                sensibility = SENSITIVITY_FUNCTION[self.sensibility](0, 1)
+                sensibility = SENSITIVITY_FUNCTION[self.sensibility](global_max_target, global_min_target)
         else:
             # Make a deepcopy in case the criterion has mutable attributes that
             # might be shared and modified concurrently during parallel fitting
@@ -1049,6 +1051,8 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
         super()._fit(
             X,
             y,
+            global_max_target=None,
+            global_min_target=None,
             epsilon_global_budget=epsilon_global_budget,
             sample_weight=sample_weight,
             check_input=check_input,
@@ -1406,7 +1410,7 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
         )
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, epsilon_global_budget=-1.0, sample_weight=None, check_input=True):
+    def fit(self, X, y, global_max_target, global_min_target, epsilon_global_budget=-1, sample_weight=None, check_input=True):
         """Build a decision tree regressor from the training set (X, y).
 
         Parameters
@@ -1439,6 +1443,8 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
             X,
             y,
             epsilon_global_budget=epsilon_global_budget,
+            global_max_target=global_max_target,
+            global_min_target=global_min_target,
             sample_weight=sample_weight,
             check_input=check_input,
         )
