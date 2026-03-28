@@ -1,8 +1,8 @@
-cdef class Sensitivity:
+cdef class SplitSensitivity:
     cdef double compute(self, int n_node_samples) noexcept nogil
 
-cdef class GiniSensitivity(Sensitivity):
+cdef class GiniSplitSensitivity(SplitSensitivity):
     pass 
 
-cdef class MSESensitivity(Sensitivity):
+cdef class MSESplitSensitivity(SplitSensitivity):
     cdef double sq_amplitude

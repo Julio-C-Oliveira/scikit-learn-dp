@@ -88,10 +88,10 @@ SPARSE_SPLITTERS = {
 
 # Modificado: Adiciona o import das funções de sensibilidade.
 SENSITIVITY_FUNCTION = {
-    "gini": _sensitivity.GiniSensitivity,
+    "gini": _sensitivity.GiniSplitSensitivity,
     "log_loss": "", # Sem implementação ainda.
     "entropy": "", # Sem implementação ainda.
-    "squared_error": _sensitivity.MSESensitivity,
+    "squared_error": _sensitivity.MSESplitSensitivity,
     "absolute_error": "", # Sem implementação ainda.
     "poisson": "" # Sem implementação ainda.
 }
@@ -141,7 +141,6 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
     def __init__(
         self,
         *,
-        sensibility,
         criterion,
         splitter,
         max_depth,
@@ -156,7 +155,6 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         ccp_alpha=0.0,
         monotonic_cst=None,
     ):
-        self.sensibility = sensibility
         self.criterion = criterion
         self.splitter = splitter
         self.max_depth = max_depth
@@ -398,11 +396,11 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                     self.n_outputs_, self.n_classes_
                 )
 
-                # Modificado: Adiciona o sensibility
-                sensibility = SENSITIVITY_FUNCTION[self.sensibility]()
+                # Modificado: Adiciona o splitSensitivity
+                splitSensitivity = SENSITIVITY_FUNCTION[self.criterion]()
             else:
                 criterion = CRITERIA_REG[self.criterion](self.n_outputs_, n_samples)
-                sensibility = SENSITIVITY_FUNCTION[self.sensibility](global_max_target, global_min_target)
+                splitSensitivity = SENSITIVITY_FUNCTION[self.criterion](global_max_target, global_min_target)
         else:
             # Make a deepcopy in case the criterion has mutable attributes that
             # might be shared and modified concurrently during parallel fitting
@@ -458,7 +456,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 min_weight_leaf,
                 random_state,
                 monotonic_cst,
-                sensibility
+                splitSensitivity
             )
 
         if is_classifier(self):
@@ -985,7 +983,6 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
     def __init__(
         self,
         *,
-        sensibility="gini",
         criterion="gini",
         splitter="best",
         max_depth=None,
@@ -1001,7 +998,6 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
         monotonic_cst=None,
     ):
         super().__init__(
-            sensibility=sensibility,
             criterion=criterion,
             splitter=splitter,
             max_depth=max_depth,
@@ -1369,7 +1365,6 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
     def __init__(
         self,
         *,
-        sensibility="squared_error",
         criterion="squared_error",
         splitter="best",
         max_depth=None,
@@ -1394,7 +1389,6 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
                 FutureWarning,
             )
         super().__init__(
-            sensibility=sensibility,
             criterion=criterion,
             splitter=splitter,
             max_depth=max_depth,

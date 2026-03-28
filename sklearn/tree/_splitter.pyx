@@ -74,7 +74,7 @@ cdef class Splitter:
         float64_t min_weight_leaf,
         object random_state,
         const int8_t[:] monotonic_cst,
-        Sensitivity sensitivity # Modificado.
+        SplitSensitivity splitSensitivity # Modificado.
     ):
         """
         Parameters
@@ -115,7 +115,7 @@ cdef class Splitter:
         self.monotonic_cst = monotonic_cst
         self.with_monotonic_cst = monotonic_cst is not None
 
-        self.sensitivity = sensitivity # Modificado.
+        self.splitSensitivity = splitSensitivity # Modificado.
 
     def __getstate__(self):
         return {}
@@ -130,7 +130,7 @@ cdef class Splitter:
                              self.min_weight_leaf,
                              self.random_state,
                              self.monotonic_cst,
-                             self.sensitivity), self.__getstate__())
+                             self.splitSensitivity), self.__getstate__())
 
     cdef int init(
         self,
@@ -280,7 +280,7 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
     SplitRecord* split,
     ParentInfo* parent_record,
     float32_t epsilon_local_budget,
-    Sensitivity sensitivity
+    SplitSensitivity splitSensitivity
 ) except -1 nogil:
     """Find the best split on node samples[start:end]
 
@@ -337,7 +337,7 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
     cdef SplitRecordArray dp_array
     init_array(&dp_array)
 
-    cdef  float32_t delta_u = sensitivity.compute(criterion.n_node_samples)
+    cdef  float32_t delta_u = splitSensitivity.compute(criterion.n_node_samples)
 
     # Modificado: Debug
     fprintf(stderr, "[Node Split Best]: Epsilon Local = %f \n", epsilon_local_budget)
@@ -588,7 +588,7 @@ cdef inline int node_split_random(
     SplitRecord* split,
     ParentInfo* parent_record,
     float32_t epsilon_local_budget,
-    Sensitivity sensitivity
+    SplitSensitivity splitSensitivity
 ) except -1 nogil:
     """Find the best random split on node samples[start:end]
 
@@ -843,7 +843,7 @@ cdef class BestSplitter(Splitter):
             split,
             parent_record,
             epsilon_local_budget,
-            self.sensitivity
+            self.splitSensitivity
         )
 
 cdef class BestSparseSplitter(Splitter):
@@ -874,7 +874,7 @@ cdef class BestSparseSplitter(Splitter):
             split,
             parent_record,
             epsilon_local_budget,
-            self.sensitivity
+            self.splitSensitivity
         )
 
 cdef class RandomSplitter(Splitter):
@@ -905,7 +905,7 @@ cdef class RandomSplitter(Splitter):
             split,
             parent_record,
             epsilon_local_budget,
-            self.sensitivity
+            self.splitSensitivity
         )
 
 cdef class RandomSparseSplitter(Splitter):
@@ -935,5 +935,5 @@ cdef class RandomSparseSplitter(Splitter):
             split,
             parent_record,
             epsilon_local_budget,
-            self.sensitivity
+            self.splitSensitivity
         )
