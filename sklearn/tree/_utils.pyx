@@ -280,8 +280,10 @@ cdef class PytestWeightedFenwickTree(WeightedFenwickTree):
 
 
 # =============================================================================
-# DPNodeSplit for Differential Privacy data structure new version
+# DPNodeSplit for Differential Privacy data structure
 # =============================================================================
+
+# Exponenccial
 
 cdef void init_array(SplitRecordArray* arr) noexcept nogil:
     arr.data = NULL
@@ -356,3 +358,19 @@ cdef SplitRecordForDifferentialPrivacy* choose_dp_split(
             return &arr.data[i]
             
     return &arr.data[arr.size - 1]
+
+
+# Laplace
+
+cdef float64_t generate_laplace_noise(float64_t scale, uint32_t* random_state) noexcept nogil:
+    cdef float64_t u = rand_uniform(0.0, 1.0, random_state)
+    
+    if u <= 0.0:
+        u = 1e-15
+    elif u >= 1.0:
+        u = 1.0 - 1e-15
+        
+    if u < 0.5:
+        return scale * ln(2.0 * u)
+    else:
+        return -scale * ln(2.0 - 2.0 * u)

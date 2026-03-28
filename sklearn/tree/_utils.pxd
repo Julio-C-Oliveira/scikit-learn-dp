@@ -76,6 +76,8 @@ cdef class WeightedFenwickTree:
 # DPNodeSplit for Differential Privacy data structure
 # =============================================================================
 
+# Exponencial
+
 cdef struct SplitRecordArray:
     SplitRecordForDifferentialPrivacy* data
     size_t size
@@ -96,3 +98,7 @@ cdef SplitRecordForDifferentialPrivacy* choose_dp_split(
     float64_t delta_u,
     uint32_t* random_state
 ) noexcept nogil
+
+# Laplace
+
+cdef float64_t generate_laplace_noise(float64_t scale, uint32_t* random_state) noexcept nogil
