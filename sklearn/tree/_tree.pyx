@@ -285,7 +285,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
 
                 # Store value for all nodes, to facilitate tree/model
                 # inspection and interpretation
-                splitter.node_value(tree.value + node_id * tree.value_stride)
+                splitter.node_value(tree.value + node_id * tree.value_stride) # Modificado: Vou analisar essa função, acho que é nela que o cálculo de DP é feito.
                 if splitter.with_monotonic_cst:
                     splitter.clip_node_value(tree.value + node_id * tree.value_stride, parent_record.lower_bound, parent_record.upper_bound)
 

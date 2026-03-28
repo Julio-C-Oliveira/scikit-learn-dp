@@ -470,7 +470,7 @@ cdef class ClassificationCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil:
+    cdef void node_value(self, float64_t* dest) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] and save it into dest.
 
         Parameters
@@ -479,6 +479,8 @@ cdef class ClassificationCriterion(Criterion):
             The memory address which we will save the node value into.
         """
         cdef intp_t k, c
+
+        # o que é o valor que fica contido no dest ao final?
 
         for k in range(self.n_outputs):
             for c in range(self.n_classes[k]):
@@ -879,7 +881,7 @@ cdef class RegressionCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil:
+    cdef void node_value(self, float64_t* dest) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
 
@@ -1443,7 +1445,7 @@ cdef class MAE(Criterion):
         self.pos = new_pos
         return 0
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil:
+    cdef void node_value(self, float64_t* dest) noexcept nogil: # Modificado: Esse não tenho que alterar, não vou utilizar Mean Absolute Error.
         """Computes the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
         for k in range(self.n_outputs):
