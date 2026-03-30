@@ -1,3 +1,5 @@
+from libc.math cimport fabs, fmax
+
 cdef class SplitSensitivity:
     cdef double compute(self, int n_node_samples) noexcept nogil:
         return 0.0
@@ -23,3 +25,21 @@ cdef class MSESplitSensitivity(SplitSensitivity):
         if n_node_samples <= 0:
             return 0.0
         return self.sq_amplitude / n_node_samples
+
+cdef class ClassCounterSensitivity(SplitSensitivity):
+    cdef double compute(self, int n_node_samples) noexcept nogil:
+        """Sensibilidade da Contagem de Classes: 1"""
+        return 1.0
+
+cdef class SumSensitivity(SplitSensitivity):
+    def __cinit__(
+        self, 
+        double g_max, 
+        double g_min
+        ):
+        cdef double amplitude = fmax(fabs(g_max), fabs(g_min)) 
+        self.amplitude = amplitude
+    
+    cdef double compute(self, int n_node_samples) noexcept nogil:
+        """Sensibilidade de uma soma: max(|G_max|, |G_min|)"""
+        return self.amplitude

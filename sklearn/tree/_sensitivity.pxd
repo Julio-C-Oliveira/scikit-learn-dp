@@ -6,3 +6,9 @@ cdef class GiniSplitSensitivity(SplitSensitivity):
 
 cdef class MSESplitSensitivity(SplitSensitivity):
     cdef double sq_amplitude
+
+cdef class ClassCounterSensitivity(SplitSensitivity):
+    pass
+
+cdef class SumSensitivity(SplitSensitivity):
+    cdef double amplitude
