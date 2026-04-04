@@ -256,8 +256,12 @@ cdef inline void _move_sums_classification(
 cdef class ClassificationCriterion(Criterion):
     """Abstract criterion for classification."""
 
-    def __cinit__(self, intp_t n_outputs,
-                  cnp.ndarray[intp_t, ndim=1] n_classes):
+    def __cinit__(
+        self, 
+        intp_t n_outputs,
+        cnp.ndarray[intp_t, ndim=1] n_classes,
+        SplitSensitivity splitSensitivity
+        ):
         """Initialize attributes for this criterion.
 
         Parameters
@@ -727,7 +731,11 @@ cdef class RegressionCriterion(Criterion):
             = (\sum_i^n y_i ** 2) - n_samples * y_bar ** 2
     """
 
-    def __cinit__(self, intp_t n_outputs, intp_t n_samples):
+    def __cinit__(
+        self, 
+        intp_t n_outputs, 
+        intp_t n_samples,
+        SplitSensitivity splitSensitivity):
         """Initialize parameters for this criterion.
 
         Parameters

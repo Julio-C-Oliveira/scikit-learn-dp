@@ -392,15 +392,29 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         criterion = self.criterion
         if not isinstance(criterion, Criterion):
             if is_classification:
-                criterion = CRITERIA_CLF[self.criterion](
-                    self.n_outputs_, self.n_classes_
-                )
-
                 # Modificado: Adiciona o splitSensitivity
                 splitSensitivity = SENSITIVITY_FUNCTION[self.criterion]()
+
+                # Modificado: Tenho que adicionar às chamadas do Criterion a função de sensibilidade.
+                # Tenho que adicionar na Base do Criterion na __cinit__
+                criterion = CRITERIA_CLF[self.criterion](
+                    self.n_outputs_, 
+                    self.n_classes_, 
+                    splitSensitivity
+                )
+
+                
             else:
-                criterion = CRITERIA_REG[self.criterion](self.n_outputs_, n_samples)
-                splitSensitivity = SENSITIVITY_FUNCTION[self.criterion](global_max_target, global_min_target)
+                splitSensitivity = SENSITIVITY_FUNCTION[self.criterion](
+                    global_max_target, 
+                    global_min_target
+                )
+
+                criterion = CRITERIA_REG[self.criterion](
+                    self.n_outputs_, 
+                    n_samples, 
+                    splitSensitivity
+                    )
         else:
             # Make a deepcopy in case the criterion has mutable attributes that
             # might be shared and modified concurrently during parallel fitting

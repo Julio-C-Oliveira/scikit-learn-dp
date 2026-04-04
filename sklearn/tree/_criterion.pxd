@@ -11,6 +11,8 @@ cdef class Criterion:
     # such as the mean in regression and class probabilities in classification.
 
     # Internal structures
+    cdef public SplitSensitivity splitSensitivity
+
     cdef const float64_t[:, ::1] y         # Values of y
     cdef const float64_t[:] sample_weight  # Sample weights
 
