@@ -490,7 +490,7 @@ cdef class ClassificationCriterion(Criterion):
                 dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
 
                 fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
-                fprintf(stderr, "   Número de amostras geral: %d | Número de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
+                fprintf(stderr, "[Node Value]: Número de amostras geral: %d | Número de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
 
 
             dest += self.max_n_classes
@@ -898,7 +898,7 @@ cdef class RegressionCriterion(Criterion):
             dest[k] = self.sum_total[k] / self.weighted_n_node_samples
 
             fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[k], is_leaf, k)
-            fprintf(stderr, "   Número de amostras: %d\n", self.n_outputs)
+            fprintf(stderr, "[Node Value]: Número de amostras: %d\n", self.n_outputs)
 
     cdef inline void clip_node_value(self, float64_t* dest, float64_t lower_bound, float64_t upper_bound) noexcept nogil:
         """Clip the value in dest between lower_bound and upper_bound for monotonic constraints."""
