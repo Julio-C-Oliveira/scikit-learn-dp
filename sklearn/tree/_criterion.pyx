@@ -734,7 +734,7 @@ cdef class RegressionCriterion(Criterion):
         self, 
         intp_t n_outputs, 
         intp_t n_samples,
-        Sensitivity splitSensitivity):
+        Sensitivity leafSensitivity):
         """Initialize parameters for this criterion.
 
         Parameters
@@ -763,7 +763,7 @@ cdef class RegressionCriterion(Criterion):
         self.sum_left = np.zeros(n_outputs, dtype=np.float64)
         self.sum_right = np.zeros(n_outputs, dtype=np.float64)
 
-        self.
+        self.sumSensitivity = leafSensitivity
 
     def __reduce__(self):
         return (type(self), (self.n_outputs, self.n_samples), self.__getstate__())
