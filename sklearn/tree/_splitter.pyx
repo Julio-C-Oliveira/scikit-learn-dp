@@ -260,7 +260,7 @@ cdef class Splitter:
     cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil:
         """Copy the value of node samples[start:end] into dest."""
 
-        self.criterion.node_value(dest) # Modificado: Tenho que alterar isso daqui.
+        self.criterion.node_value(dest, is_leaf) # Modificado: Tenho que alterar isso daqui.
 
     cdef inline void clip_node_value(self, float64_t* dest, float64_t lower_bound, float64_t upper_bound) noexcept nogil:
         """Clip the value in dest between lower_bound and upper_bound for monotonic constraints."""
