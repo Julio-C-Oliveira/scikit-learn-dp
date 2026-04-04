@@ -763,7 +763,7 @@ cdef class RegressionCriterion(Criterion):
         self.sum_left = np.zeros(n_outputs, dtype=np.float64)
         self.sum_right = np.zeros(n_outputs, dtype=np.float64)
 
-        self.sumSensitivity = leafSensitivity
+        self.leafSensitivity = leafSensitivity
 
     def __reduce__(self):
         return (type(self), (self.n_outputs, self.n_samples), self.__getstate__())
