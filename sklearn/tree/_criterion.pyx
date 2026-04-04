@@ -15,6 +15,9 @@ from sklearn.tree._utils cimport log
 from sklearn.tree._utils cimport WeightedFenwickTree
 from sklearn.tree._partitioner cimport sort
 
+# Modificado: Adiciona bibliotecas para debugar o código.
+from libc.stdio cimport fprintf, stderr
+
 # EPSILON is used in the Poisson criterion
 cdef float64_t EPSILON = 10 * np.finfo('double').eps
 
@@ -487,6 +490,9 @@ cdef class ClassificationCriterion(Criterion):
                 dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
             dest += self.max_n_classes
 
+            fprintf(stderr, "[Node Value]: %f \n", dest)
+
+
     cdef inline void clip_node_value(
         self, float64_t * dest, float64_t lower_bound, float64_t upper_bound
     ) noexcept nogil:
@@ -887,6 +893,8 @@ cdef class RegressionCriterion(Criterion):
 
         for k in range(self.n_outputs):
             dest[k] = self.sum_total[k] / self.weighted_n_node_samples
+
+            fprintf(stderr, "[Node Value]: %f \n", dest)
 
     cdef inline void clip_node_value(self, float64_t* dest, float64_t lower_bound, float64_t upper_bound) noexcept nogil:
         """Clip the value in dest between lower_bound and upper_bound for monotonic constraints."""
