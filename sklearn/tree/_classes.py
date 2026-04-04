@@ -399,8 +399,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 # Tenho que adicionar na Base do Criterion na __cinit__
                 criterion = CRITERIA_CLF[self.criterion](
                     self.n_outputs_, 
-                    self.n_classes_, 
-                    splitSensitivity
+                    self.n_classes_
                 )
 
                 
@@ -413,8 +412,11 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 criterion = CRITERIA_REG[self.criterion](
                     self.n_outputs_, 
                     n_samples, 
-                    splitSensitivity
+                    _sensitivity.SumSensitivity(
+                        global_max_target, 
+                        global_min_target
                     )
+                )
         else:
             # Make a deepcopy in case the criterion has mutable attributes that
             # might be shared and modified concurrently during parallel fitting
