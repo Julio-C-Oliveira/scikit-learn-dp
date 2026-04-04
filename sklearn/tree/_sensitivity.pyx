@@ -1,17 +1,17 @@
 from libc.math cimport fabs, fmax
 
-cdef class SplitSensitivity:
+cdef class Sensitivity:
     cdef double compute(self, int n_node_samples) noexcept nogil:
         return 0.0
 
-cdef class GiniSplitSensitivity(SplitSensitivity):
+cdef class GiniSplitSensitivity(Sensitivity):
     cdef double compute(self, int n_node_samples) noexcept nogil:
         """Sensibilidade Gini: 1/n"""
         if n_node_samples <= 0:
             return 0.0
         return 1.0 / n_node_samples
 
-cdef class MSESplitSensitivity(SplitSensitivity):
+cdef class MSESplitSensitivity(Sensitivity):
     def __cinit__(
         self, 
         double g_max, 
@@ -26,12 +26,12 @@ cdef class MSESplitSensitivity(SplitSensitivity):
             return 0.0
         return self.sq_amplitude / n_node_samples
 
-cdef class ClassCounterSensitivity(SplitSensitivity):
+cdef class ClassCounterSensitivity(Sensitivity):
     cdef double compute(self, int n_node_samples) noexcept nogil:
         """Sensibilidade da Contagem de Classes: 1"""
         return 1.0
 
-cdef class SumSensitivity(SplitSensitivity):
+cdef class SumSensitivity(Sensitivity):
     def __cinit__(
         self, 
         double g_max, 

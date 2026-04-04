@@ -4,7 +4,7 @@
 # See _criterion.pyx for implementation details.
 from sklearn.utils._typedefs cimport float64_t, int8_t, intp_t
 
-from sklearn.tree._sensitivity cimport SplitSensitivity # Modificado: Adiciona o sensitivity
+from sklearn.tree._sensitivity cimport Sensitivity # Modificado: Adiciona o sensitivity
 
 cdef class Criterion:
     # The criterion computes the impurity of a node and the reduction of
@@ -12,7 +12,7 @@ cdef class Criterion:
     # such as the mean in regression and class probabilities in classification.
 
     # Internal structures
-    cdef public SplitSensitivity splitSensitivity
+    cdef public Sensitivity splitSensitivity
 
     cdef const float64_t[:, ::1] y         # Values of y
     cdef const float64_t[:] sample_weight  # Sample weights

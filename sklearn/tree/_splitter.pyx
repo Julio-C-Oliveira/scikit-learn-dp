@@ -74,7 +74,7 @@ cdef class Splitter:
         float64_t min_weight_leaf,
         object random_state,
         const int8_t[:] monotonic_cst,
-        SplitSensitivity splitSensitivity # Modificado.
+        Sensitivity splitSensitivity # Modificado.
     ):
         """
         Parameters
@@ -280,7 +280,7 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
     SplitRecord* split,
     ParentInfo* parent_record,
     float32_t epsilon_local_budget,
-    SplitSensitivity splitSensitivity
+    Sensitivity splitSensitivity
 ) except -1 nogil:
     """Find the best split on node samples[start:end]
 
@@ -588,7 +588,7 @@ cdef inline int node_split_random(
     SplitRecord* split,
     ParentInfo* parent_record,
     float32_t epsilon_local_budget,
-    SplitSensitivity splitSensitivity
+    Sensitivity splitSensitivity
 ) except -1 nogil:
     """Find the best random split on node samples[start:end]
 

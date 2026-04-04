@@ -259,8 +259,7 @@ cdef class ClassificationCriterion(Criterion):
     def __cinit__(
         self, 
         intp_t n_outputs,
-        cnp.ndarray[intp_t, ndim=1] n_classes,
-        SplitSensitivity splitSensitivity
+        cnp.ndarray[intp_t, ndim=1] n_classes
         ):
         """Initialize attributes for this criterion.
 
@@ -735,7 +734,7 @@ cdef class RegressionCriterion(Criterion):
         self, 
         intp_t n_outputs, 
         intp_t n_samples,
-        SplitSensitivity splitSensitivity):
+        Sensitivity splitSensitivity):
         """Initialize parameters for this criterion.
 
         Parameters
@@ -763,6 +762,8 @@ cdef class RegressionCriterion(Criterion):
         self.sum_total = np.zeros(n_outputs, dtype=np.float64)
         self.sum_left = np.zeros(n_outputs, dtype=np.float64)
         self.sum_right = np.zeros(n_outputs, dtype=np.float64)
+
+        self.
 
     def __reduce__(self):
         return (type(self), (self.n_outputs, self.n_samples), self.__getstate__())

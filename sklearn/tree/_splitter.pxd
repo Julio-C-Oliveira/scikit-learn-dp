@@ -6,7 +6,7 @@
 from sklearn.utils._typedefs cimport (
     float32_t, float64_t, int8_t, int32_t, intp_t, uint8_t, uint32_t
 )
-from sklearn.tree._sensitivity cimport SplitSensitivity # Modificado: Adiciona o sensitivity
+from sklearn.tree._sensitivity cimport Sensitivity # Modificado: Adiciona o sensitivity
 from sklearn.tree._criterion cimport Criterion
 from sklearn.tree._tree cimport ParentInfo
 
@@ -33,7 +33,7 @@ cdef class Splitter:
     # The impurity computations are delegated to a criterion object.
 
     # Internal structures
-    cdef public SplitSensitivity splitSensitivity
+    cdef public Sensitivity splitSensitivity
     cdef public Criterion criterion      # Impurity criterion
     cdef public intp_t max_features      # Number of features to test
     cdef public intp_t min_samples_leaf  # Min samples in a leaf
