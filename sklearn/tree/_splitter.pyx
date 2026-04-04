@@ -257,7 +257,7 @@ cdef class Splitter:
 
         pass
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil:
+    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil:
         """Copy the value of node samples[start:end] into dest."""
 
         self.criterion.node_value(dest) # Modificado: Tenho que alterar isso daqui.

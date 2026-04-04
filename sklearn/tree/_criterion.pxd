@@ -51,7 +51,8 @@ cdef class Criterion:
     ) noexcept nogil
     cdef void node_value(
         self,
-        float64_t* dest
+        float64_t* dest, 
+        bint is_leaf
     ) noexcept nogil
     cdef void clip_node_value(
         self,

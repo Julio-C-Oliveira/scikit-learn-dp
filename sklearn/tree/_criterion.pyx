@@ -124,7 +124,7 @@ cdef class Criterion:
         """
         pass
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil:
+    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil:
         """Placeholder for storing the node value.
 
         Placeholder for a method which will compute the node value
@@ -473,7 +473,7 @@ cdef class ClassificationCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
+    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] and save it into dest.
 
         Parameters
@@ -490,7 +490,7 @@ cdef class ClassificationCriterion(Criterion):
                 dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
             dest += self.max_n_classes
 
-            fprintf(stderr, "[Node Value]: %f \n", dest)
+            fprintf(stderr, "[Node Value]: %f | Is leaf: %d \n", dest, is_leaf)
 
 
     cdef inline void clip_node_value(
@@ -887,14 +887,15 @@ cdef class RegressionCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
+    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
 
         for k in range(self.n_outputs):
             dest[k] = self.sum_total[k] / self.weighted_n_node_samples
 
-            fprintf(stderr, "[Node Value]: %f \n", dest)
+            fprintf(stderr, "[Node Value]: %f | Is leaf: %d \n", dest, is_leaf)
+
 
     cdef inline void clip_node_value(self, float64_t* dest, float64_t lower_bound, float64_t upper_bound) noexcept nogil:
         """Clip the value in dest between lower_bound and upper_bound for monotonic constraints."""
@@ -1453,7 +1454,7 @@ cdef class MAE(Criterion):
         self.pos = new_pos
         return 0
 
-    cdef void node_value(self, float64_t* dest) noexcept nogil: # Modificado: Esse não tenho que alterar, não vou utilizar Mean Absolute Error.
+    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil: # Modificado: Esse não tenho que alterar, não vou utilizar Mean Absolute Error.
         """Computes the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
         for k in range(self.n_outputs):
