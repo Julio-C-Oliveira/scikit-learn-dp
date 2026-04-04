@@ -489,7 +489,7 @@ cdef class ClassificationCriterion(Criterion):
             for c in range(self.n_classes[k]):
                 dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
 
-                fprintf(stderr, "[Node Value]: %f | Is leaf: %d \n", dest[c], is_leaf)
+                fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
 
             dest += self.max_n_classes
 
@@ -895,7 +895,7 @@ cdef class RegressionCriterion(Criterion):
         for k in range(self.n_outputs):
             dest[k] = self.sum_total[k] / self.weighted_n_node_samples
 
-            fprintf(stderr, "[Node Value]: %f | Is leaf: %d \n", dest[k], is_leaf)
+            fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[k], is_leaf, k)
 
 
     cdef inline void clip_node_value(self, float64_t* dest, float64_t lower_bound, float64_t upper_bound) noexcept nogil:
