@@ -11,7 +11,7 @@ cnp.import_array()
 
 from scipy.special.cython_special cimport xlogy
 
-from sklearn.tree._utils cimport log
+from sklearn.tree._utils cimport log, generate_laplace_noise
 from sklearn.tree._utils cimport WeightedFenwickTree
 from sklearn.tree._partitioner cimport sort
 
@@ -486,6 +486,9 @@ cdef class ClassificationCriterion(Criterion):
         """
         cdef intp_t k, c
 
+        cdef double sensitivity
+        cdef float64_t scale
+
         # Tenho que puxar o epsilon para cá também, ideia:
         # - Passar para o tree, junto com o local budger, adicionar a leaf budget.
         # - Passar para a node_value.
@@ -496,12 +499,16 @@ cdef class ClassificationCriterion(Criterion):
 
         for k in range(self.n_outputs):
             for c in range(self.n_classes[k]):
-                dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
 
                 fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
                 fprintf(stderr, "       Numero de saidas: %d | Numero de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
                 fprintf(stderr, "       Epsilon: %f | Sensibilidade: \n", epsilon_leaf_budget)
 
+                if epsilon_leaf_budget < 0:
+                    dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
+                
+                else:
+                    sensitivity = ClassCounterSensitivity.compute(self.n_classes[k])
 
             dest += self.max_n_classes
 

@@ -4,7 +4,7 @@
 # See _criterion.pyx for implementation details.
 from sklearn.utils._typedefs cimport float64_t, float32_t, int8_t, intp_t
 
-from sklearn.tree._sensitivity cimport Sensitivity # Modificado: Adiciona o sensitivity
+from sklearn.tree._sensitivity cimport Sensitivity, ClassCounterSensitivity # Modificado: Adiciona o sensitivity
 
 cdef class Criterion:
     # The criterion computes the impurity of a node and the reduction of
