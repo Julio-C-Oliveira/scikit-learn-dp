@@ -766,7 +766,7 @@ cdef class RegressionCriterion(Criterion):
         self, 
         intp_t n_outputs, 
         intp_t n_samples,
-        Sensitivity sumSensitivity):
+        SumSensitivity sumSensitivity):
         """Initialize parameters for this criterion.
 
         Parameters
