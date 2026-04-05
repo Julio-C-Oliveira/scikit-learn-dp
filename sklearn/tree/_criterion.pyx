@@ -494,14 +494,7 @@ cdef class ClassificationCriterion(Criterion):
         cdef double sensitivity
         cdef float64_t scale
         cdef float64_t noisy_count
-
-        # Tenho que puxar o epsilon para cá também, ideia:
-        # - Passar para o tree, junto com o local budger, adicionar a leaf budget.
-        # - Passar para a node_value.
-        
-        # Para a função de sensibilidade:
-        # - Instanciar na _classes.
-        # - Adicionar no criterion.
+        cdef float64_t total_noisy_count
 
         for k in range(self.n_outputs):
             for c in range(self.n_classes[k]):
@@ -518,8 +511,20 @@ cdef class ClassificationCriterion(Criterion):
                     fprintf(stderr, "       Epsilon: %f | Sensibilidade: %f\n", epsilon_leaf_budget, sensitivity)
 
                     scale = sensitivity / epsilon_leaf_budget
-                    # noisy_count = self.sum_total[k, c] + generate_laplace_noise(scale, random_state)
+                    noisy_count = self.sum_total[k, c] + generate_laplace_noise(scale, random_state)
 
+                    if noisy_count < 0.0:
+                        noisy_count = 0.0
+
+                    dest[c] = noisy_count
+                total_noisy_count += dest[c]
+
+            # Normalização, tinha dado errado porque a probabilidade tava somando mais de 1.
+            for c in range(self.n_classes[k]):
+                if total_noisy_count > 0:
+                    dest[c] /= total_noisy_count
+                else:
+                    dest[c] = 1.0 / self.n_classes[k]
 
             dest += self.max_n_classes
 
