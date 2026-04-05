@@ -500,7 +500,7 @@ cdef class ClassificationCriterion(Criterion):
 
                 fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
                 fprintf(stderr, "       Numero de saidas: %d | Numero de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
-                fprintf(stderr, "       Epsilon: %d | Sensibilidade: \n", epsilon_leaf_budget)
+                fprintf(stderr, "       Epsilon: %f | Sensibilidade: \n", epsilon_leaf_budget)
 
 
             dest += self.max_n_classes
