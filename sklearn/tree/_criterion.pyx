@@ -499,7 +499,8 @@ cdef class ClassificationCriterion(Criterion):
                 dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
 
                 fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
-                fprintf(stderr, "[Node Value]: Numero de saidas: %d | Numero de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
+                fprintf(stderr, "       Numero de saidas: %d | Numero de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
+                fprintf(stderr, "       Epsilon: %d | Sensibilidade: \n", epsilon_leaf_budget)
 
 
             dest += self.max_n_classes
