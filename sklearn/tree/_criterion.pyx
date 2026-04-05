@@ -513,7 +513,7 @@ cdef class ClassificationCriterion(Criterion):
                 else:
                     sensitivity = self.counterSensitivity.compute(self.n_classes[k])
 
-                    fprintf(stderr, "       Epsilon: %f | Sensibilidade: %d\n", epsilon_leaf_budget, sensitivity)
+                    fprintf(stderr, "       Epsilon: %f | Sensibilidade: %f\n", epsilon_leaf_budget, sensitivity)
 
             dest += self.max_n_classes
 
