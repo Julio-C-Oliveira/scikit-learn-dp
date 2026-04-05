@@ -102,7 +102,7 @@ cdef class Splitter:
         float32_t epsilon_local_budget
     ) except -1 nogil
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil
 
     cdef void clip_node_value(self, float64_t* dest, float64_t lower_bound, float64_t upper_bound) noexcept nogil
 
