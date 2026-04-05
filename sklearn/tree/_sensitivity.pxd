@@ -7,10 +7,13 @@ cdef class GiniSplitSensitivity(Sensitivity):
 cdef class MSESplitSensitivity(Sensitivity):
     cdef double sq_amplitude
 
-cdef class ClassCounterSensitivity():
+cdef class LeafSensitivity:
     cdef double compute(self) noexcept nogil
 
-cdef class SumSensitivity(Sensitivity):
+cdef class ClassCounterSensitivity(LeafSensitivity):
+    pass
+
+cdef class SumSensitivity(LeafSensitivity):
     cdef double g_max
     cdef double g_min
     cdef double amplitude

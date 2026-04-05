@@ -966,7 +966,7 @@ cdef class RegressionCriterion(Criterion):
 
                 fprintf(stderr, " Sensibilidade: %f |", counter_sensitivity)
 
-                sum_sensitivity = self.sumSensitivity.compute(original_count)
+                sum_sensitivity = self.sumSensitivity.compute()
                 scale_sum = sum_sensitivity / (epsilon_leaf_budget / 2.0)
                 noisy_sum = original_sum + generate_laplace_noise(scale_sum, random_state)
                 
