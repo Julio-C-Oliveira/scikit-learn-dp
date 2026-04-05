@@ -497,16 +497,18 @@ cdef class ClassificationCriterion(Criterion):
         cdef float64_t total_noisy_count
 
         for k in range(self.n_outputs):
+            total_noisy_count = 0.0
+
             for c in range(self.n_classes[k]):
 
                 fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
                 fprintf(stderr, "       Numero de saidas: %d | Numero de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
 
-                if epsilon_leaf_budget < 0:
+                if not is_leaf or epsilon_leaf_budget < 0:
                     dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
                 
                 else:
-                    sensitivity = self.counterSensitivity.compute(self.n_classes[k])
+                    sensitivity = self.counterSensitivity.compute()
 
                     fprintf(stderr, "       Epsilon: %f | Sensibilidade: %f\n", epsilon_leaf_budget, sensitivity)
 
@@ -934,11 +936,54 @@ cdef class RegressionCriterion(Criterion):
         """Compute the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
 
-        for k in range(self.n_outputs):
-            dest[k] = self.sum_total[k] / self.weighted_n_node_samples
+        cdef double counter_sensitivity, sum_sensitivity
+        cdef float64_t scale_counter, scale_sum
+        cdef float64_t noisy_count, noisy_sum, noisy_mean
+        cdef float64_t original_count, original_sum
+        cdef double g_max, g_min
 
+        for k in range(self.n_outputs):
             fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[k], is_leaf, k)
-            fprintf(stderr, "[Node Value]: Numero de saidas: %d | Numero de amostras: %d\n", self.n_outputs, self.weighted_n_node_samples)
+            fprintf(stderr, "       Numero de saidas: %d | Numero de amostras: %d\n", self.n_outputs, self.weighted_n_node_samples)
+
+            if not is_leaf or epsilon_leaf_budget < 0:
+                dest[k] = self.sum_total[k] / self.weighted_n_node_samples
+
+            else:
+                original_count = self.weighted_n_node_samples
+                original_sum = self.sum_total[k]
+                g_max = self.sumSensitivity.g_max
+                g_min = self.sumSensitivity.g_min
+
+                fprintf(stderr, "       Epsilon: %f |", epsilon_leaf_budget)
+
+                counter_sensitivity = self.counterSensitivity.compute()
+                scale_counter = counter_sensitivity / (epsilon_leaf_budget / 2.0) # Ainda estou em dúvida se preciso dividir o budget entre a soma e a contagem, antes de fazer a média.
+                noisy_count = original_count + generate_laplace_noise(scale_counter, random_state)
+
+                if noisy_count < 0.0:
+                    noisy_count = 0.0
+
+                fprintf(stderr, " Sensibilidade: %f |", counter_sensitivity)
+
+                sum_sensitivity = self.sumSensitivity.compute(original_count)
+                scale_sum = sum_sensitivity / (epsilon_leaf_budget / 2.0)
+                noisy_sum = original_sum + generate_laplace_noise(scale_sum, random_state)
+                
+                fprintf(stderr, " Sensibilidade: %f\n", sum_sensitivity)
+
+                noisy_mean = noisy_sum / noisy_count
+
+                if noisy_mean < g_min:
+                    noisy_mean = g_min
+                elif noisy_mean > g_max:
+                    noisy_mean = g_max
+                    
+                dest[k] = noisy_mean
+
+#     dest[c] = noisy_count
+# total_noisy_count += dest[c]
+
 
     cdef inline void clip_node_value(self, float64_t* dest, float64_t lower_bound, float64_t upper_bound) noexcept nogil:
         """Clip the value in dest between lower_bound and upper_bound for monotonic constraints."""

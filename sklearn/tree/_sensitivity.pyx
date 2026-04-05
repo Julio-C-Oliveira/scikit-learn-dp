@@ -38,6 +38,8 @@ cdef class SumSensitivity(Sensitivity):
         double g_min
         ):
         cdef double amplitude = fmax(fabs(g_max), fabs(g_min)) 
+        self.g_max = g_max
+        self.g_min = g_min
         self.amplitude = amplitude
     
     cdef double compute(self, int n_node_samples) noexcept nogil:
