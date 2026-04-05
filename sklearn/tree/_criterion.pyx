@@ -19,6 +19,7 @@ from sklearn.tree._partitioner cimport sort
 from libc.stdio cimport fprintf, stderr
 
 from sklearn.tree._sensitivity cimport ClassCounterSensitivity # Modificado.
+from sklearn.tree._utils cimport generate_laplace_noise
 
 # EPSILON is used in the Poisson criterion
 cdef float64_t EPSILON = 10 * np.finfo('double').eps
@@ -126,7 +127,7 @@ cdef class Criterion:
         """
         pass
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil:
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget, uint32_t* random_state) noexcept nogil:
         """Placeholder for storing the node value.
 
         Placeholder for a method which will compute the node value
@@ -480,7 +481,7 @@ cdef class ClassificationCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget, uint32_t* random_state) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] and save it into dest.
 
         Parameters
@@ -492,6 +493,7 @@ cdef class ClassificationCriterion(Criterion):
 
         cdef double sensitivity
         cdef float64_t scale
+        cdef float64_t noisy_count
 
         # Tenho que puxar o epsilon para cá também, ideia:
         # - Passar para o tree, junto com o local budger, adicionar a leaf budget.
@@ -514,6 +516,10 @@ cdef class ClassificationCriterion(Criterion):
                     sensitivity = self.counterSensitivity.compute(self.n_classes[k])
 
                     fprintf(stderr, "       Epsilon: %f | Sensibilidade: %f\n", epsilon_leaf_budget, sensitivity)
+
+                    scale = sensitivity / epsilon_leaf_budget
+                    # noisy_count = self.sum_total[k, c] + generate_laplace_noise(scale, random_state)
+
 
             dest += self.max_n_classes
 
@@ -919,7 +925,7 @@ cdef class RegressionCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget, uint32_t* random_state) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
 
@@ -1486,7 +1492,7 @@ cdef class MAE(Criterion):
         self.pos = new_pos
         return 0
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil: # Modificado: Esse não tenho que alterar, não vou utilizar Mean Absolute Error.
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget, uint32_t* random_state) noexcept nogil: # Modificado: Esse não tenho que alterar, não vou utilizar Mean Absolute Error.
         """Computes the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
         for k in range(self.n_outputs):
