@@ -508,7 +508,8 @@ cdef class ClassificationCriterion(Criterion):
                     dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
                 
                 else:
-                    sensitivity = ClassCounterSensitivity.compute(self.n_classes[k])
+                    sensitivity_function = ClassCounterSensitivity()
+                    sensitivity = sensitivity_function.compute(self.n_classes[k])
 
             dest += self.max_n_classes
 
