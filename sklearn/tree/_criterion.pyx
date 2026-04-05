@@ -18,6 +18,8 @@ from sklearn.tree._partitioner cimport sort
 # Modificado: Adiciona bibliotecas para debugar o código.
 from libc.stdio cimport fprintf, stderr
 
+from sklearn.tree._sensitivity cimport ClassCounterSensitivity # Modificado.
+
 # EPSILON is used in the Poisson criterion
 cdef float64_t EPSILON = 10 * np.finfo('double').eps
 
@@ -283,6 +285,8 @@ cdef class ClassificationCriterion(Criterion):
 
         self.n_classes = np.empty(n_outputs, dtype=np.intp)
 
+        self.counterSensitivity = ClassCounterSensitivity()
+
         cdef intp_t k = 0
         cdef intp_t max_n_classes = 0
 
@@ -508,8 +512,7 @@ cdef class ClassificationCriterion(Criterion):
                     dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
                 
                 else:
-                    sensitivity_function = ClassCounterSensitivity()
-                    sensitivity = sensitivity_function.compute(self.n_classes[k])
+                    self.counterSensitivity.compute(self.n_classes[k])
 
             dest += self.max_n_classes
 
@@ -749,7 +752,7 @@ cdef class RegressionCriterion(Criterion):
         self, 
         intp_t n_outputs, 
         intp_t n_samples,
-        Sensitivity leafSensitivity):
+        Sensitivity sumSensitivity):
         """Initialize parameters for this criterion.
 
         Parameters
@@ -778,7 +781,8 @@ cdef class RegressionCriterion(Criterion):
         self.sum_left = np.zeros(n_outputs, dtype=np.float64)
         self.sum_right = np.zeros(n_outputs, dtype=np.float64)
 
-        self.leafSensitivity = leafSensitivity
+        self.counterSensitivity = ClassCounterSensitivity()
+        self.sumSensitivity = sumSensitivity
 
     def __reduce__(self):
         return (type(self), (self.n_outputs, self.n_samples), self.__getstate__())
