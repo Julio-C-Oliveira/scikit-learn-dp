@@ -124,7 +124,7 @@ cdef class Criterion:
         """
         pass
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil:
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil:
         """Placeholder for storing the node value.
 
         Placeholder for a method which will compute the node value
@@ -476,7 +476,7 @@ cdef class ClassificationCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] and save it into dest.
 
         Parameters
@@ -486,7 +486,13 @@ cdef class ClassificationCriterion(Criterion):
         """
         cdef intp_t k, c
 
-        # o que é o valor que fica contido no dest ao final?
+        # Tenho que puxar o epsilon para cá também, ideia:
+        # - Passar para o tree, junto com o local budger, adicionar a leaf budget.
+        # - Passar para a node_value.
+        
+        # Para a função de sensibilidade:
+        # - Instanciar na _classes.
+        # - Adicionar no criterion.
 
         for k in range(self.n_outputs):
             for c in range(self.n_classes[k]):
@@ -899,7 +905,7 @@ cdef class RegressionCriterion(Criterion):
                                 float64_t* impurity_right) noexcept nogil:
         pass
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil: # Modificado: Tenho que alterar aqui para adicionar Laplace.
         """Compute the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
 
@@ -1466,7 +1472,7 @@ cdef class MAE(Criterion):
         self.pos = new_pos
         return 0
 
-    cdef void node_value(self, float64_t* dest, bint is_leaf) noexcept nogil: # Modificado: Esse não tenho que alterar, não vou utilizar Mean Absolute Error.
+    cdef void node_value(self, float64_t* dest, bint is_leaf, float32_t epsilon_leaf_budget) noexcept nogil: # Modificado: Esse não tenho que alterar, não vou utilizar Mean Absolute Error.
         """Computes the node value of sample_indices[start:end] into dest."""
         cdef intp_t k
         for k in range(self.n_outputs):

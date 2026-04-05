@@ -134,10 +134,13 @@ cdef struct StackRecord:
 cdef inline float32_t calculate_local_budget(object epsilon_global, intp_t max_depth) noexcept:
     fprintf(stderr, "[_tree]: Epsilon Global = %f \n", <float32_t>epsilon_global)
 
-    if <float32_t>epsilon_global == -1.0:
+    if <float32_t>epsilon_global < 0.0:
         return -1.0
     
     return <float32_t>(epsilon_global / (max_depth + 1))
+
+cdef inline float32_t calculate_leaf_budget(object epsilon_global, intp_t max_depth) noexcept:
+    pass
 
 cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global budget.
     """Build a decision tree in depth-first fashion."""
@@ -285,7 +288,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
 
                 # Store value for all nodes, to facilitate tree/model
                 # inspection and interpretation
-                splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf) # Modificado: Vou analisar essa função, acho que é nela que o cálculo de DP é feito.
+                splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf, epsilon_local_budget) # Modificado: Vou analisar essa função, acho que é nela que o cálculo de DP é feito.
                 if splitter.with_monotonic_cst:
                     splitter.clip_node_value(tree.value + node_id * tree.value_stride, parent_record.lower_bound, parent_record.upper_bound)
 
@@ -648,7 +651,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
 
         # compute values also for split nodes (might become leafs later).
 
-        splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf)
+        splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf, epsilon_local_budget)
         if splitter.with_monotonic_cst:
             splitter.clip_node_value(tree.value + node_id * tree.value_stride, parent_record.lower_bound, parent_record.upper_bound)
 

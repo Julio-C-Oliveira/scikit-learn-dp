@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: BSD-3-Clause
 
 # See _criterion.pyx for implementation details.
-from sklearn.utils._typedefs cimport float64_t, int8_t, intp_t
+from sklearn.utils._typedefs cimport float64_t, float32_t, int8_t, intp_t
 
 from sklearn.tree._sensitivity cimport Sensitivity # Modificado: Adiciona o sensitivity
 
@@ -55,7 +55,8 @@ cdef class Criterion:
     cdef void node_value(
         self,
         float64_t* dest, 
-        bint is_leaf
+        bint is_leaf, 
+        float32_t epsilon_leaf_budget
     ) noexcept nogil
     cdef void clip_node_value(
         self,
