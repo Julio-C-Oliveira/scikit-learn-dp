@@ -51,10 +51,10 @@ Atual:
 - [x] Adicionar a aplicação do mecanismo exponencial aos nós de split.
 - [x] Verificar um modo de otimizar a aplicação do mecanismo exponencial.
 - Implementar as funções de sensibilidade para os nós folha:
-- [ ] Implementar o cálculo do leaf budget.
-- [ ] Para contagem de classes.
-- [ ] Para soma do valor das amostras.
-- [ ] Adicionar o mecanismo de Laplace aos nós folha.
+- [x] Implementar o cálculo do leaf budget.
+- [x] Para contagem de classes.
+- [x] Para soma do valor das amostras.
+- [x] Adicionar o mecanismo de Laplace aos nós folha.
 
 Baixar depois:
 
