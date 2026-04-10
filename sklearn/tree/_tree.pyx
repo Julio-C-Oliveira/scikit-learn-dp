@@ -131,13 +131,33 @@ cdef struct StackRecord:
     float64_t upper_bound
 
 # Modificado: Adiciona função para cálcular o local budget:
-cdef inline float32_t calculate_local_budget(object epsilon_global, intp_t max_depth) noexcept:
+cdef struct EpsilonBudgets:
+    float32_t layers_budget
+    float32_t leaf_budget
+
+# TODO:
+# - O calculate epsilon budget deve retornar o valor para as leafs e para as layers.
+# - Permitir ao usuário decidir como será o balanceamento entre orçamento para layers e para leafs.
+
+cdef inline EpsilonBudgets calculate_epsilon_budgets(object epsilon_global, intp_t max_depth, float32_t balancing_coefficient) noexcept:
     fprintf(stderr, "[_tree]: Epsilon Global = %f \n", <float32_t>epsilon_global)
+    cdef EpsilonBudgets epsilon_budgets
+    cdef float32_t general_epsilon
 
     if <float32_t>epsilon_global < 0.0:
-        return -1.0
+        epsilon_budgets.layers_budget = -1.0
+        epsilon_budgets.leaf_budget = -1.0
+        return epsilon_budgets
+
+    if balancing_coefficient < 0.0:
+        general_epsilon = <float32_t>(epsilon_global / (max_depth + 1))
+        epsilon_budgets.layers_budget = general_epsilon
+        epsilon_budgets.leaf_budget = general_epsilon
+    else:
+        epsilon_budgets.leaf_budget = <float32_t>(epsilon_global * balancing_coefficient)
+        epsilon_budgets.layers_budget = ((epsilon_global - epsilon_budgets.leaf_budget) / max_depth)
     
-    return <float32_t>(epsilon_global / (max_depth + 1))
+    return epsilon_budgets
 
 cdef inline float32_t calculate_leaf_budget(object epsilon_global, intp_t max_depth) noexcept:
     pass
@@ -148,7 +168,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
     def __cinit__(self, Splitter splitter, intp_t min_samples_split,
                   intp_t min_samples_leaf, float64_t min_weight_leaf,
                   intp_t max_depth, float64_t min_impurity_decrease,
-                  float32_t epsilon_global_budget):
+                  float32_t epsilon_global_budget, float32_t balancing_coefficient):
         self.splitter = splitter
         self.min_samples_split = min_samples_split
         self.min_samples_leaf = min_samples_leaf
@@ -156,6 +176,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
         self.max_depth = max_depth
         self.min_impurity_decrease = min_impurity_decrease
         self.epsilon_global_budget = epsilon_global_budget
+        self.balancing_coefficient = balancing_coefficient
 
     cpdef build(
         self,
@@ -188,8 +209,10 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
         cdef intp_t min_samples_split = self.min_samples_split
         cdef float64_t min_impurity_decrease = self.min_impurity_decrease
 
-        # Modificado: Adiciona o global budget e calcula o local budget.
-        cdef float32_t epsilon_local_budget = calculate_local_budget(self.epsilon_global_budget, max_depth)
+        # Modificado: Adiciona o global budget e calcula o local budget. epsilon_local_budget
+        cdef EpsilonBudgets epsilon_tree_budgets = calculate_epsilon_budgets(self.epsilon_global_budget, max_depth, self.balancing_coefficient)
+        cdef float32_t epsilon_layers_budget = epsilon_tree_budgets.layers_budget
+        cdef float32_t epsilon_leaf_budget = epsilon_tree_budgets.leaf_budget
 
         # Recursive partition (without actual recursion)
         splitter.init(X, y, sample_weight, missing_values_in_feature_mask)
@@ -268,7 +291,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
                     splitter.node_split(
                         &parent_record,
                         &split,
-                        epsilon_local_budget
+                        epsilon_layers_budget
                     )
                     # If EPSILON=0 in the below comparison, float precision
                     # issues stop splitting, producing trees that are
@@ -288,7 +311,7 @@ cdef class DepthFirstTreeBuilder(TreeBuilder): # Modificado: Adiciona o global b
 
                 # Store value for all nodes, to facilitate tree/model
                 # inspection and interpretation
-                splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf, epsilon_local_budget) # Modificado: Vou analisar essa função, acho que é nela que o cálculo de DP é feito.
+                splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf, epsilon_leaf_budget) # Modificado: Vou analisar essa função, acho que é nela que o cálculo de DP é feito.
                 if splitter.with_monotonic_cst:
                     splitter.clip_node_value(tree.value + node_id * tree.value_stride, parent_record.lower_bound, parent_record.upper_bound)
 
@@ -609,7 +632,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
         cdef bint is_leaf
         
         # Modificado: Adiciona o global budget e calcula o local budget.
-        cdef float32_t epsilon_local_budget = -1.0
+        cdef float32_t epsilon_layers_budget = -1.0
 
         splitter.node_reset(start, end, &weighted_n_node_samples)
 
@@ -632,7 +655,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
             splitter.node_split(
                 parent_record,
                 &split,
-                epsilon_local_budget
+                epsilon_layers_budget
             )
             # If EPSILON=0 in the below comparison, float precision issues stop
             # splitting early, producing trees that are dissimilar to v0.18
@@ -651,7 +674,7 @@ cdef class BestFirstTreeBuilder(TreeBuilder):
 
         # compute values also for split nodes (might become leafs later).
 
-        splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf, epsilon_local_budget)
+        splitter.node_value(tree.value + node_id * tree.value_stride, is_leaf, epsilon_layers_budget)
         if splitter.with_monotonic_cst:
             splitter.clip_node_value(tree.value + node_id * tree.value_stride, parent_record.lower_bound, parent_record.upper_bound)
 

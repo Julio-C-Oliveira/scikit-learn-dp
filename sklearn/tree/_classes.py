@@ -246,6 +246,7 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
         X,
         y,
         epsilon_global_budget,
+        balancing_coefficient,
         global_max_target,
         global_min_target,
         sample_weight=None,
@@ -494,7 +495,8 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
                 min_weight_leaf,
                 max_depth,
                 self.min_impurity_decrease,
-                epsilon_global_budget
+                epsilon_global_budget,
+                balancing_coefficient
             )
         else: # Modificado: Por tabela, a base das duas implementação é a mesma, então ao modificar uma a outra toma junto, mas esse ainda não possui DP.
             builder = BestFirstTreeBuilder(
@@ -1030,7 +1032,7 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
         )
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, epsilon_global_budget=-1.0, sample_weight=None, check_input=True):
+    def fit(self, X, y, epsilon_global_budget=-1.0, balancing_coefficient=-1, sample_weight=None, check_input=True):
         """Build a decision tree classifier from the training set (X, y).
 
         Parameters
@@ -1066,6 +1068,7 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
             global_max_target=None,
             global_min_target=None,
             epsilon_global_budget=epsilon_global_budget,
+            balancing_coefficient=balancing_coefficient,
             sample_weight=sample_weight,
             check_input=check_input,
         )
@@ -1420,7 +1423,7 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
         )
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, global_max_target, global_min_target, epsilon_global_budget=-1, sample_weight=None, check_input=True):
+    def fit(self, X, y, global_max_target, global_min_target, epsilon_global_budget=-1, balancing_coefficient=-1, sample_weight=None, check_input=True):
         """Build a decision tree regressor from the training set (X, y).
 
         Parameters
@@ -1453,6 +1456,7 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
             X,
             y,
             epsilon_global_budget=epsilon_global_budget,
+            balancing_coefficient=balancing_coefficient,
             global_max_target=global_max_target,
             global_min_target=global_min_target,
             sample_weight=sample_weight,

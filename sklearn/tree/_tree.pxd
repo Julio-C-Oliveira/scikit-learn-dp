@@ -99,6 +99,7 @@ cdef class TreeBuilder: # Modificado: Adiciona o global budget.
     cdef intp_t max_depth               # Maximal tree depth
     cdef float64_t min_impurity_decrease   # Impurity threshold for early stopping
     cdef float32_t epsilon_global_budget
+    cdef float32_t balancing_coefficient
 
     cpdef build(
         self,
