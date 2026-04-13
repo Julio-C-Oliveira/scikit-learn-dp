@@ -24,37 +24,7 @@ Utilize os seguintes parâmtros para garantir que a aplicação de DP está ocor
 
 TO-DO:
 
-- [ ] Inicialização das váriaveis necessárias:
-   - [x] Receber o orçamento total por hiperparâmetro, e definir o orçamento por camada. ε por camada = ε total / (profundidade máxima + 1).
-   - [ ] Adicionar a possibilidade de passar um valor None no Epsilon, convertendo para -1.0 no meio do caminho, não vou usar NULL, pois somente ponteiros aceitam NULL.
-   - [ ] Adicionar uma váriavel para debug.
-   - [ ] Definir o Global max e Global min, para o target em caso de árvores de regressão.
-- [ ] Definir a função de sensibilidade de acordo com a função de utilidade:
-   - [x] Para o mean squared error. Δu = (Gmax - Gmin)²/n
-   - [ ] Para o squared error. Δu = (Gmax - Gmin)²
-   - [x] Para o gini impurity. Δu = 1/n, onde n é o número de amostras no nó.
-   - [ ] Para o entropia. Δu = 1/n, onde n é o número de amostras no nó.
-- [ ] Implementar o mecanismo exponencial nos nós de split.
-- [ ] Definir a função de sensibilidade para os nós folha:
-   - [ ] Para a contagem de classes ou registros. Δu = 1
-   - [ ] Para a soma de registros. Δu = = max(|Gmax|, |Gmin|).
-- [ ] Implementar o mecanismo de Laplace nos nós folha.
-
-Atual:
-
-- Já implementei o orçamento, já chegou no node_split_best.
-- Agora tenho que repassar a função de sensibilidade para a node split best. Primeira vai ser a de Gini Impurity. 
-- Testar a função de sensibilidade:
-- [x] Testar a Gini.
-- [x] Testar a MSE.
-- [x] Adicionar o Global max e min.
-- [x] Adicionar a aplicação do mecanismo exponencial aos nós de split.
-- [x] Verificar um modo de otimizar a aplicação do mecanismo exponencial.
-- Implementar as funções de sensibilidade para os nós folha:
-- [x] Implementar o cálculo do leaf budget.
-- [x] Para contagem de classes.
-- [x] Para soma do valor das amostras.
-- [x] Adicionar o mecanismo de Laplace aos nós folha.
+- [ ] Comentar ou remover os prints de debug.
 
 Baixar depois:
 

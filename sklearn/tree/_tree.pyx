@@ -140,7 +140,7 @@ cdef struct EpsilonBudgets:
 # - Permitir ao usuário decidir como será o balanceamento entre orçamento para layers e para leafs.
 
 cdef inline EpsilonBudgets calculate_epsilon_budgets(object epsilon_global, intp_t max_depth, float32_t balancing_coefficient) noexcept:
-    fprintf(stderr, "[_tree]: Epsilon Global = %f \n", <float32_t>epsilon_global)
+    # fprintf(stderr, "[_tree]: Epsilon Global = %f \n", <float32_t>epsilon_global)
     cdef EpsilonBudgets epsilon_budgets
     cdef float32_t general_epsilon
 

@@ -501,8 +501,8 @@ cdef class ClassificationCriterion(Criterion):
 
             for c in range(self.n_classes[k]):
 
-                fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
-                fprintf(stderr, "       Numero de saidas: %d | Numero de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
+                # fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[c], is_leaf, c)
+                # fprintf(stderr, "       Numero de saidas: %d | Numero de amostras da classe: %d\n", self.n_outputs, self.n_classes[k])
 
                 if not is_leaf or epsilon_leaf_budget < 0:
                     dest[c] = self.sum_total[k, c] / self.weighted_n_node_samples
@@ -510,7 +510,7 @@ cdef class ClassificationCriterion(Criterion):
                 else:
                     sensitivity = self.counterSensitivity.compute()
 
-                    fprintf(stderr, "       Epsilon: %f | Sensibilidade: %f\n", epsilon_leaf_budget, sensitivity)
+                    # fprintf(stderr, "       Epsilon: %f | Sensibilidade: %f\n", epsilon_leaf_budget, sensitivity)
 
                     scale = sensitivity / epsilon_leaf_budget
                     noisy_count = self.sum_total[k, c] + generate_laplace_noise(scale, random_state)
@@ -943,8 +943,8 @@ cdef class RegressionCriterion(Criterion):
         cdef double g_max, g_min
 
         for k in range(self.n_outputs):
-            fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[k], is_leaf, k)
-            fprintf(stderr, "       Numero de saidas: %d | Numero de amostras: %d\n", self.n_outputs, self.weighted_n_node_samples)
+            # fprintf(stderr, "[Node Value]: %f | Is leaf: %d | Counter: %d \n", dest[k], is_leaf, k)
+            # fprintf(stderr, "       Numero de saidas: %d | Numero de amostras: %d\n", self.n_outputs, self.weighted_n_node_samples)
 
             if not is_leaf or epsilon_leaf_budget < 0:
                 dest[k] = self.sum_total[k] / self.weighted_n_node_samples
@@ -955,7 +955,7 @@ cdef class RegressionCriterion(Criterion):
                 g_max = self.sumSensitivity.g_max
                 g_min = self.sumSensitivity.g_min
 
-                fprintf(stderr, "       Epsilon: %f |", epsilon_leaf_budget)
+                # fprintf(stderr, "       Epsilon: %f |", epsilon_leaf_budget)
 
                 counter_sensitivity = self.counterSensitivity.compute()
                 scale_counter = counter_sensitivity / (epsilon_leaf_budget / 2.0) # Ainda estou em dúvida se preciso dividir o budget entre a soma e a contagem, antes de fazer a média.
@@ -964,13 +964,13 @@ cdef class RegressionCriterion(Criterion):
                 if noisy_count < 0.0:
                     noisy_count = 0.0
 
-                fprintf(stderr, " Sensibilidade: %f |", counter_sensitivity)
+                # fprintf(stderr, " Sensibilidade: %f |", counter_sensitivity)
 
                 sum_sensitivity = self.sumSensitivity.compute()
                 scale_sum = sum_sensitivity / (epsilon_leaf_budget / 2.0)
                 noisy_sum = original_sum + generate_laplace_noise(scale_sum, random_state)
                 
-                fprintf(stderr, " Sensibilidade: %f\n", sum_sensitivity)
+                # fprintf(stderr, " Sensibilidade: %f\n", sum_sensitivity)
 
                 noisy_mean = noisy_sum / noisy_count
 

@@ -340,8 +340,8 @@ cdef inline int node_split_best( # Modificado: Adiciona o local budget aos args.
     cdef  float32_t delta_u = splitSensitivity.compute(criterion.n_node_samples)
 
     # Modificado: Debug
-    fprintf(stderr, "[Node Split Best]: Epsilon Local = %f \n", epsilon_local_budget)
-    fprintf(stderr, "[Node Split Best]: Sensibilidade = %f \n", delta_u)
+    # fprintf(stderr, "[Node Split Best]: Epsilon Local = %f \n", epsilon_local_budget)
+    # fprintf(stderr, "[Node Split Best]: Sensibilidade = %f \n", delta_u)
 
     _init_split(&best_split, end)
 
