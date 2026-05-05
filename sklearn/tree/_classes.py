@@ -1065,8 +1065,8 @@ class DecisionTreeClassifier(ClassifierMixin, BaseDecisionTree):
         super()._fit(
             X,
             y,
-            global_max_target=None,
-            global_min_target=None,
+            global_max_target=-1.0,
+            global_min_target=-1.0,
             epsilon_global_budget=epsilon_global_budget,
             balancing_coefficient=balancing_coefficient,
             sample_weight=sample_weight,
@@ -1423,7 +1423,7 @@ class DecisionTreeRegressor(RegressorMixin, BaseDecisionTree):
         )
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, global_max_target, global_min_target, epsilon_global_budget=-1, balancing_coefficient=-1, sample_weight=None, check_input=True):
+    def fit(self, X, y, global_max_target=-1.0, global_min_target=-1.0, epsilon_global_budget=-1, balancing_coefficient=-1, sample_weight=None, check_input=True):
         """Build a decision tree regressor from the training set (X, y).
 
         Parameters

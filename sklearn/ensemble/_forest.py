@@ -135,6 +135,10 @@ def _parallel_build_trees(
     bootstrap,
     X,
     y,
+    epsilon_global_budget,
+    balancing_coefficient,
+    global_max_target,
+    global_min_target,
     sample_weight,
     tree_idx,
     n_trees,
@@ -164,6 +168,10 @@ def _parallel_build_trees(
         tree._fit(
             X,
             y,
+            epsilon_global_budget=epsilon_global_budget,
+            balancing_coefficient=balancing_coefficient,
+            global_max_target=global_max_target,
+            global_min_target=global_min_target,
             sample_weight=sample_weight_tree,
             check_input=False,
             missing_values_in_feature_mask=missing_values_in_feature_mask,
@@ -172,6 +180,10 @@ def _parallel_build_trees(
         tree._fit(
             X,
             y,
+            epsilon_global_budget=epsilon_global_budget,
+            balancing_coefficient=balancing_coefficient,
+            global_max_target=global_max_target,
+            global_min_target=global_min_target,
             sample_weight=sample_weight,
             check_input=False,
             missing_values_in_feature_mask=missing_values_in_feature_mask,
@@ -301,7 +313,7 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
         return sparse_hstack(indicators).tocsr(), n_nodes_ptr
 
     @_fit_context(prefer_skip_nested_validation=True)
-    def fit(self, X, y, sample_weight=None):
+    def fit(self, X, y, global_max_target=-1, global_min_target=-1, epsilon_global_budget=-1, balancing_coefficient=-1, sample_weight=None): # Tenho que adicionar os argumentos de DP aqui.
         """
         Build a forest of trees from the training set (X, y).
 
@@ -466,7 +478,7 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
             # that case. However, for joblib 0.12+ we respect any
             # parallel_backend contexts set at a higher level,
             # since correctness does not rely on using threads.
-            trees = Parallel(
+            trees = Parallel( # Preciso alterar isso aqui. Adicionando os parâmetros de DP.
                 n_jobs=self.n_jobs,
                 verbose=self.verbose,
                 prefer="threads",
@@ -476,6 +488,10 @@ class BaseForest(MultiOutputMixin, BaseEnsemble, metaclass=ABCMeta):
                     self.bootstrap,
                     X,
                     y,
+                    epsilon_global_budget,
+                    balancing_coefficient,
+                    global_max_target,
+                    global_min_target,
                     _sample_weight,
                     i,
                     len(trees),
