@@ -91,7 +91,7 @@ SENSITIVITY_FUNCTION = {
     "gini": _sensitivity.GiniSplitSensitivity,
     "log_loss": "", # Sem implementação ainda.
     "entropy": "", # Sem implementação ainda.
-    "squared_error": _sensitivity.MSESplitSensitivity,
+    "squared_error": _sensitivity.SESplitSensitivity,
     "absolute_error": "", # Sem implementação ainda.
     "poisson": "" # Sem implementação ainda.
 }

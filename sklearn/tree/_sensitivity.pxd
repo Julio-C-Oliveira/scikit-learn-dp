@@ -4,7 +4,7 @@ cdef class Sensitivity:
 cdef class GiniSplitSensitivity(Sensitivity):
     pass 
 
-cdef class MSESplitSensitivity(Sensitivity):
+cdef class SESplitSensitivity(Sensitivity):
     cdef double sq_amplitude
 
 cdef class LeafSensitivity:

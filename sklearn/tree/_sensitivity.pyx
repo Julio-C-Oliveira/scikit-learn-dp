@@ -11,7 +11,7 @@ cdef class GiniSplitSensitivity(Sensitivity):
             return 0.0
         return 1.0 / n_node_samples
 
-cdef class MSESplitSensitivity(Sensitivity):
+cdef class SESplitSensitivity(Sensitivity):
     def __cinit__(
         self, 
         double g_max, 
@@ -21,10 +21,10 @@ cdef class MSESplitSensitivity(Sensitivity):
         self.sq_amplitude = amplitude * amplitude
 
     cdef double compute(self, int n_node_samples) noexcept nogil:
-        """Sensibilidade MSE: (G_max - G_min)^2 / n"""
+        """Sensibilidade Squared Error: (G_max - G_min)^2"""
         if n_node_samples <= 0:
             return 0.0
-        return self.sq_amplitude / n_node_samples
+        return self.sq_amplitude
 
 cdef class LeafSensitivity:
     cdef double compute(self) noexcept nogil:
