@@ -405,6 +405,9 @@ class BaseDecisionTree(MultiOutputMixin, BaseEstimator, metaclass=ABCMeta):
 
                 
             else:
+                if epsilon_global_budget >= 0:
+                    np.clip(y, global_min_target, global_max_target, out=y)
+
                 splitSensitivity = SENSITIVITY_FUNCTION[self.criterion](
                     global_max_target, 
                     global_min_target
