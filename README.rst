@@ -25,7 +25,7 @@ Utilize os seguintes parâmtros para garantir que a aplicação de DP está ocor
 TO-DO:
 
 - [x] Corrigir a função de sensibilidade, de MSE para Squared Eror.
-- [ ] Adicionar o clipping dos dados de entrada.
+- [x] Adicionar o clipping dos dados de entrada.
 - [ ] Análisar melhor a seguinte hipotese:
    - Alguns nós são finalizados em camadas intermediárias, não chegando ao limite de profundidade definida pelo modelo.
    - Seria possível calcular o que já foi gasto nos nós anteriores e adicionar o que sobrou ao orçamento dos nós folha? 
